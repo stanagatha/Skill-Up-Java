@@ -1,6 +1,4 @@
 package org.alkemy.wallet.model;
-import com.sun.istack.NotNull;
-import com.sun.istack.Nullable;
 import lombok.Data;
 import javax.persistence.*;
 import java.util.Date;
@@ -12,11 +10,12 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @NotNull
+    @Column(name = "AMOUNT", nullable = false)
     private double amount;
-    @NotNull
+    @Column(name = "TYPE_TRANSACTION", nullable = false)
+    @Enumerated(value = EnumType.STRING)
     private String type_transaction;
-    @Nullable
+    @Column(name = "DESCRIP", nullable = true)
     private String descrip;
     @Temporal(TemporalType.TIMESTAMP)
     private Date transactionDate;
