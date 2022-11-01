@@ -1,4 +1,4 @@
-package com.alkemy.wallet;
+package org.alkemy.wallet;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
