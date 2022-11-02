@@ -4,4 +4,6 @@ import org.alkemy.wallet.model.Account;
 
 public interface IAccountService {
     public void saveAccount(Account account);
+
+    public Account findById(long accountId);
 }
