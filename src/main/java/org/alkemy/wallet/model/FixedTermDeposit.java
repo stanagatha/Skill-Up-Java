@@ -12,7 +12,7 @@ import java.util.Date;
 @Data
 @Getter
 @Setter
-@Table(name = "FIXED_TERM_DEPOSITS")  // mayus
+@Table(name = "FIXED_TERM_DEPOSITS")
 public class FixedTermDeposit {
 
     @Id
@@ -22,6 +22,10 @@ public class FixedTermDeposit {
 
     @Column(name = "AMOUNT", nullable = false)
     private Double amount;
+
+    @ManyToOne
+    @JoinColumn(name = "USER_ID")
+    private User userId;
 
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID")
