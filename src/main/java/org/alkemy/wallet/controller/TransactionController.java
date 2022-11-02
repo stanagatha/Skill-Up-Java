@@ -42,4 +42,19 @@ public class TransactionController {
         return new ResponseEntity<>(transactionService.save(transaction), HttpStatus.OK);
     }
 
+    @PostMapping("/payment")
+    public ResponseEntity<?> payment(@RequestBody TransactionDto transactionDto, @RequestParam("accountId") long accountId){
+        if(transactionDto.getTransactionDate() == null){
+            return new ResponseEntity<>("'Date' of transaction must not be null", HttpStatus.BAD_REQUEST);
+        }
+        if(transactionDto.getAmount() <= 0){
+            return new ResponseEntity<>("Incorrect amount. Please select an amount greater than 0", HttpStatus.BAD_REQUEST);
+        }
+        Account account = accountService.findById(accountId);
+        transactionDto.setTypeTransaction(TypeTransaction.payment.name());
+        Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
+        transaction.setAccountId(account);
+        return new ResponseEntity<>(transactionService.save(transaction), HttpStatus.OK);
+    }
+
 }
