@@ -7,10 +7,10 @@ import java.util.Date;
 @Data
 public class TransactionDto implements Serializable {
 
-    private long id;
+    private long transactionId;
     private double amount;
-    private String type_transaction;
-    private String descrip;
+    private String typeTransaction;
+    private String descript;
     @JsonFormat(pattern = "yyyy/MM/dd")
     private Date transactionDate;
 }

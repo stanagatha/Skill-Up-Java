@@ -2,6 +2,7 @@ package org.alkemy.wallet.mapper;
 
 import org.alkemy.wallet.dto.TransactionDto;
 import org.alkemy.wallet.model.Transaction;
+import org.alkemy.wallet.model.TypeTransaction;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -11,10 +12,10 @@ public class TransactionMapper {
             return null;
 
         Transaction transaction = new Transaction();
-        transaction.setId(transactionDto.getId());
+        transaction.setTransactionId(transactionDto.getTransactionId());
         transaction.setAmount(transactionDto.getAmount());
-        transaction.setType_transaction(transactionDto.getType_transaction());
-        transaction.setDescrip(transactionDto.getDescrip());
+        transaction.setTypeTransaction(TypeTransaction.valueOf(transactionDto.getTypeTransaction()));
+        transaction.setDescript(transactionDto.getDescript());
         transaction.setTransactionDate(transactionDto.getTransactionDate());
 
         return transaction;
@@ -25,11 +26,11 @@ public class TransactionMapper {
             return null;
 
         TransactionDto transactionDto = new TransactionDto();
-        transactionDto.setId(transactionDto.getId());
-        transactionDto.setAmount(transactionDto.getAmount());
-        transaction.setType_transaction(transactionDto.getType_transaction());
-        transactionDto.setDescrip(transactionDto.getDescrip());
-        transaction.setTransactionDate(transactionDto.getTransactionDate());
+        transactionDto.setTransactionId(transaction.getTransactionId());
+        transactionDto.setAmount(transaction.getAmount());
+        transactionDto.setTypeTransaction(transaction.getTypeTransaction().name());
+        transactionDto.setDescript(transaction.getDescript());
+        transactionDto.setTransactionDate(transaction.getTransactionDate());
 
         return transactionDto;
     }
