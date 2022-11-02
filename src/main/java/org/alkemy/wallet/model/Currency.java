@@ -1,4 +1,6 @@
+package org.alkemy.wallet.model;
+
 public enum Currency {
-  ARG,
-  USD
+    USD,
+    ARS
 }
