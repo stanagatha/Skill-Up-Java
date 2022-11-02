@@ -15,9 +15,9 @@ public class Transaction {
     private double amount;
     @Column(name = "TYPE_TRANSACTION", nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private TypeTransaction type_transaction;
-    @Column(name = "DESCRIP", nullable = true)
-    private String descrip;
+    private TypeTransaction typeTransaction;
+    @Column(name = "DESCRIPT", nullable = true)
+    private String descript;
     @Temporal(TemporalType.TIMESTAMP)
     private Date transactionDate;
 
@@ -27,11 +27,11 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(long id, double amount, TypeTransaction type_transaction, String descrip, Date transactionDate) {
-        this.id = id;
+    public Transaction(long tansactionId, double amount, TypeTransaction type_transaction, String descript, Date transactionDate) {
+        this.transactionId = transactionId;
         this.amount = amount;
-        this.type_transaction = type_transaction;
-        this.descrip = descrip;
+        this.typeTransaction = typeTransaction;
+        this.descript = descript;
         this.transactionDate = transactionDate;
     }
 }
