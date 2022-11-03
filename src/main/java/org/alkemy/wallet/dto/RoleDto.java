@@ -9,7 +9,7 @@ import java.util.Date;
 @Data
 public class RoleDto implements Serializable {
 
-    private long id;
+    private Long id;
     private String roleName;
     private String description;
     @JsonFormat(pattern = "yyyy/MM/dd")
