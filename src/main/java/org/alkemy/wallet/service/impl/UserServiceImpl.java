@@ -60,7 +60,7 @@ public class UserServiceImpl implements IUserService {
         if (user.isEmpty())
             throw new CustomException("No user with id: " + id);
 
-        if (user.get().isSoftDelete())
+        if (user.get().getSoftDelete())
             throw new CustomException("The user is already deleted.");
 
         user.get().setSoftDelete(true);

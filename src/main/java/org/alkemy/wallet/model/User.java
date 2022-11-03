@@ -1,5 +1,6 @@
 package org.alkemy.wallet.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -13,7 +14,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="ID")
-    private long id;
+    private Long id;
 
     @Column(name="FIRST_NAME", nullable = false)
     private String firstName;
@@ -21,7 +22,7 @@ public class User {
     @Column(name="LAST_NAME", nullable = false)
     private String lastName;
 
-    @Column(name="EMAIL", nullable = false)
+    @Column(name="EMAIL", nullable = false, unique = true)
     private String email;
 
     @Column(name="USER_PASSWORD", nullable = false)
@@ -38,6 +39,6 @@ public class User {
     private Date updateDate;
 
     @Column(name="SOFT_DELETE", nullable = false)
-    private boolean softDelete;
+    private Boolean softDelete;
 
 }
