@@ -8,8 +8,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AccountServiceImpl implements IAccountService {
+
+    private final IAccountRepository iAccountRepository;
+
     @Autowired
-    private IAccountRepository iAccountRepository;
+    public AccountServiceImpl(IAccountRepository iAccountRepository) {
+        this.iAccountRepository = iAccountRepository;
+    }
+
     @Override
     public void saveAccount(Account account){
         iAccountRepository.save(account);

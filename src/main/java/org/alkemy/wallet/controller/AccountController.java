@@ -16,15 +16,21 @@ import java.util.Date;
 @RestController
 @RequestMapping("/api")
 public class AccountController {
-    @Autowired
+
     private IAccountService iAccountService;
+
+    @Autowired
+    public AccountController(IAccountService iAccountService) {
+        this.iAccountService = iAccountService;
+    }
+
     @PostMapping("/accounts")
     public ResponseEntity<Object> createAccount(@RequestParam Currency currency){
         //Falta parte del loggin para poder continuar
         Account account = new Account();
         account.setCreationDate(new Date());
         account.setCurrency(currency);
-        account.setBalance(0);
+        account.setBalance(0d);
         iAccountService.saveAccount(account);
         return new ResponseEntity<>("Account created", HttpStatus.CREATED);
     }
