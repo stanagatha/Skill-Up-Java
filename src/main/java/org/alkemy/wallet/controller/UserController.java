@@ -17,6 +17,12 @@ public class UserController {
         this.userService = userService;
     }
 
+    //@Secured("ADMIN")
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAll(){
+        return ResponseEntity.ok().body(userService.getAll());
+    }
+
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteById(@PathVariable("userId") Long id){
         return ResponseEntity.ok().body(userService.deleteById(id));
