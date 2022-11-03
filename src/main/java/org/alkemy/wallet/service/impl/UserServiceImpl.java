@@ -31,6 +31,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public List<UserDto> getAll() {
+        return userRepository.findAll().stream().
+                map(user -> userMapper.userToUserDTO(user)).
+                collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public String deleteById(Long id) {
 
