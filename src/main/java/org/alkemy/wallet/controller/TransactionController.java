@@ -36,7 +36,7 @@ public class TransactionController {
             return new ResponseEntity<>("Incorrect amount. Please select an amount greater than 0", HttpStatus.BAD_REQUEST);
         }
         Account account = accountService.findById(accountId);
-        transactionDto.setTypeTransaction(TypeTransaction.deposit.name());
+        transactionDto.setTypeTransaction(TypeTransaction.DEPOSIT.name());
         Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
         transaction.setAccountId(account);
         return new ResponseEntity<>(transactionService.save(transaction), HttpStatus.OK);
@@ -51,7 +51,7 @@ public class TransactionController {
             return new ResponseEntity<>("Incorrect amount. Please select an amount greater than 0", HttpStatus.BAD_REQUEST);
         }
         Account account = accountService.findById(accountId);
-        transactionDto.setTypeTransaction(TypeTransaction.payment.name());
+        transactionDto.setTypeTransaction(TypeTransaction.PAYMENT.name());
         Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
         transaction.setAccountId(account);
         return new ResponseEntity<>(transactionService.save(transaction), HttpStatus.OK);
