@@ -31,7 +31,7 @@ public class Account {
   @Column(nullable = false)
   private double balance;
   /*
-  @OneToMany
+  @ManyToOne
   @JoinColumn(name = "user_id", nullable= false)
   private User user;
   */
