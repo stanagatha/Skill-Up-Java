@@ -12,10 +12,8 @@ public class FixedTermDepositMapper {
             return null;
 
         FixedTermDeposit fixedTermDeposit = new FixedTermDeposit();
-        fixedTermDeposit.setFixedTermDepositsId(fixedTermDepositDto.getFixedTermDepositsId());
+        fixedTermDeposit.setId(fixedTermDepositDto.getId());
         fixedTermDeposit.setAmount(fixedTermDepositDto.getAmount());
-        fixedTermDeposit.setUserId(fixedTermDepositDto.getUserId());
-        fixedTermDeposit.setAccountId(fixedTermDepositDto.getAccountId());
         fixedTermDeposit.setInterest(fixedTermDepositDto.getInterest());
         fixedTermDeposit.setCreationDate(fixedTermDepositDto.getCreationDate());
         fixedTermDeposit.setClosingDate(fixedTermDepositDto.getClosingDate());
@@ -28,10 +26,8 @@ public class FixedTermDepositMapper {
             return null;
 
         FixedTermDepositDto fixedTermDepositDto = new FixedTermDepositDto();
-        fixedTermDepositDto.setFixedTermDepositsId(fixedTermDeposit.getFixedTermDepositsId());
+        fixedTermDepositDto.setId(fixedTermDeposit.getId());
         fixedTermDepositDto.setAmount(fixedTermDeposit.getAmount());
-        fixedTermDepositDto.setUserId(fixedTermDeposit.getUserId());
-        fixedTermDepositDto.setAccountId(fixedTermDeposit.getAccountId());
         fixedTermDepositDto.setInterest(fixedTermDeposit.getInterest());
         fixedTermDepositDto.setCreationDate(fixedTermDeposit.getCreationDate());
         fixedTermDepositDto.setClosingDate(fixedTermDeposit.getClosingDate());

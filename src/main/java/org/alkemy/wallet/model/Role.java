@@ -1,5 +1,6 @@
 package org.alkemy.wallet.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -13,7 +14,7 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="ID")
-    private long id;
+    private Long id;
 
     @Column(name = "ROLE_NAME", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -27,4 +28,5 @@ public class Role {
 
     @Column(name = "UPDATE_DATE")
     private Date updateDate;
+
 }

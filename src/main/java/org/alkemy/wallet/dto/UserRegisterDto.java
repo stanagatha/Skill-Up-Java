@@ -1,6 +1,11 @@
 package org.alkemy.wallet.dto;
 
-public class UserRegisterDto {
+import lombok.Data;
+
+import java.io.Serializable;
+
+@Data
+public class UserRegisterDto implements Serializable {
 
     private String firstName;
     private String lastName;

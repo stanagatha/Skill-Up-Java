@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class FixedTermDepositController {
+
     @PostMapping("/fixedDeposit")
     public ResponseEntity<Object> createFixedDeposit(@RequestParam double amount){
         return new ResponseEntity<>("fixed deposit created", HttpStatus.CREATED);
     }
+
 }

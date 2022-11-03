@@ -8,8 +8,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FixedTermDepositImpl implements IFixedTermDepositService {
+
+    private final IFixedTermDepositRepository iFixedTermDepositRepository;
+
     @Autowired
-    private IFixedTermDepositRepository iFixedTermDepositRepository;
+    public FixedTermDepositImpl(IFixedTermDepositRepository iFixedTermDepositRepository) {
+        this.iFixedTermDepositRepository = iFixedTermDepositRepository;
+    }
+
     @Override
     public void saveFixedDeposit(FixedTermDeposit fixedTermDeposit){
         iFixedTermDepositRepository.save(fixedTermDeposit);

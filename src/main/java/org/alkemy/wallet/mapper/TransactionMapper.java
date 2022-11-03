@@ -12,7 +12,7 @@ public class TransactionMapper {
             return null;
 
         Transaction transaction = new Transaction();
-        transaction.setTransactionId(transactionDto.getTransactionId());
+        transaction.setId(transactionDto.getId());
         transaction.setAmount(transactionDto.getAmount());
         transaction.setTypeTransaction(TypeTransaction.valueOf(transactionDto.getTypeTransaction()));
         transaction.setDescript(transactionDto.getDescript());
@@ -26,7 +26,7 @@ public class TransactionMapper {
             return null;
 
         TransactionDto transactionDto = new TransactionDto();
-        transactionDto.setTransactionId(transaction.getTransactionId());
+        transactionDto.setId(transaction.getId());
         transactionDto.setAmount(transaction.getAmount());
         transactionDto.setTypeTransaction(transaction.getTypeTransaction().name());
         transactionDto.setDescript(transaction.getDescript());

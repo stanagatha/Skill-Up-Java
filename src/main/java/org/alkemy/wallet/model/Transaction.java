@@ -1,37 +1,35 @@
 package org.alkemy.wallet.model;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Data
 @Table(name = "TRANSACTIONS")
+@Data
 public class Transaction {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="TRANSACTION_ID")
-    private long transactionId;
+    @Column(name="ID")
+    private Long id;
+
     @Column(name = "AMOUNT", nullable = false)
-    private double amount;
+    private Double amount;
+
     @Column(name = "TYPE_TRANSACTION", nullable = false)
     @Enumerated(value = EnumType.STRING)
     private TypeTransaction typeTransaction;
-    @Column(name = "DESCRIPT", nullable = true)
+
+    @Column(name = "DESCRIPT")
     private String descript;
-    @Temporal(TemporalType.TIMESTAMP)
+
+    @Column(name = "TRANSACTION_DATE")
     private Date transactionDate;
 
     @ManyToOne
-    @JoinColumn(name = "ACCOUNT_ID")
+    @JoinColumn(name = "ACCOUNT_ID", nullable = false)
     private Account accountId;
-    public Transaction() {
-    }
 
-    public Transaction(long tansactionId, double amount, TypeTransaction type_transaction, String descript, Date transactionDate) {
-        this.transactionId = transactionId;
-        this.amount = amount;
-        this.typeTransaction = typeTransaction;
-        this.descript = descript;
-        this.transactionDate = transactionDate;
-    }
 }
