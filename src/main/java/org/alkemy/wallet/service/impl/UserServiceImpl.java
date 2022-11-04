@@ -1,19 +1,20 @@
 package org.alkemy.wallet.service.impl;
 
-import org.alkemy.wallet.exception.NotFoundException;
+import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.exception.CustomException;
 import org.alkemy.wallet.mapper.UserMapper;
+import org.alkemy.wallet.model.Account;
+import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.model.RoleName;
 import org.alkemy.wallet.model.User;
 import org.alkemy.wallet.repository.IUserRepository;
+import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -28,12 +29,15 @@ public class UserServiceImpl implements IUserService {
 
     private final IUserRepository userRepository;
     private final UserMapper userMapper;
+    private final IAccountService accountService;
+
 
     @Autowired
-    public UserServiceImpl(IUserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(IUserRepository userRepository, UserMapper userMapper, IAccountService accountService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-    }    
+        this.accountService = accountService;
+    }
 	
     @Override
     public List<UserDto> getAll() {
@@ -82,5 +86,20 @@ public class UserServiceImpl implements IUserService {
 		
 		return userRepository.save(user);		
 	}
+
+    @Override
+    public List<String> getBalance() {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long userId = userRepository.findByEmail(userEmail).getId();
+
+        List<AccountDto> accounts = accountService.findAllByUser(userId);
+        List<String> balances = new ArrayList<>();
+
+        for (AccountDto account : accounts) {
+            balances.add(account.getCurrency() + ": " + account.getBalance());
+        }
+
+        return balances;
+    }
 
 }

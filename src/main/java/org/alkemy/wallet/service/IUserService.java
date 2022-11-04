@@ -13,6 +13,9 @@ public interface IUserService {
     List<UserDto> getAll();
 
     String deleteById(Long id);
+
     User save(User user);
+
+    List<String> getBalance();
 
 }
