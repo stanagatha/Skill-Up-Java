@@ -63,7 +63,7 @@ public class AuthController {
 
 	@ResponseStatus(code = HttpStatus.CREATED)
 	@PostMapping(value = "/register")
-	public ResponseEntity<User> createUser(@RequestBody UserRegisterDto user) throws Exception {
+	public ResponseEntity<ResponseJwtDto> createUser(@RequestBody UserRegisterDto user) throws Exception {
 		user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
 		User userSaved = userService.save(new User(
 				user.getFirstName(),
@@ -72,9 +72,14 @@ public class AuthController {
 				user.getPassword(),
 				roleService.findByRoleName(RoleName.USER)
 				));
+		
+		final UserDetails userDetails = userDetailsService
+				.loadUserByUsername(userSaved.getEmail());
+
+		final String token = jwtTokenUtil.generateToken(userDetails);
 	
-		return new ResponseEntity<User>(userSaved,null,HttpStatus.CREATED);
-	} 
+		return new ResponseEntity<ResponseJwtDto>(new ResponseJwtDto(token),null,HttpStatus.CREATED);
+	}
 	private void authenticate(String username, String password) throws Exception {
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
