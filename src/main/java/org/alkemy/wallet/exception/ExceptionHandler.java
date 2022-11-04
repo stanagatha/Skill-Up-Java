@@ -16,6 +16,12 @@ public class ExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @org.springframework.web.bind.annotation.ExceptionHandler({NotFoundException.class})
+    @ResponseBody
+    public ResponseEntity<String> notFoundExceptionHandler(HttpServletRequest req, RuntimeException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+    
     @org.springframework.web.bind.annotation.ExceptionHandler
     public ResponseEntity<String> handleException(IllegalArgumentException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
