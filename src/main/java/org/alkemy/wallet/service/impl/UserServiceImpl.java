@@ -1,5 +1,6 @@
 package org.alkemy.wallet.service.impl;
 
+import org.alkemy.wallet.exception.NotFoundException;
 import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.exception.CustomException;
 import org.alkemy.wallet.mapper.UserMapper;
@@ -11,9 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,8 +33,8 @@ public class UserServiceImpl implements IUserService {
     public UserServiceImpl(IUserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-    }
-
+    }    
+	
     @Override
     public List<UserDto> getAll() {
         return userRepository.findAll().stream().
@@ -66,5 +71,16 @@ public class UserServiceImpl implements IUserService {
         user.get().setSoftDelete(true);
         return "User " + id + " successfully deleted.";
     }
+
+	@Override
+	public User save(User user) {
+		User existUser = userRepository.findByEmail(user.getEmail());
+		
+		if(existUser!=null) {
+			throw new CustomException("Email already exist");
+		}
+		
+		return userRepository.save(user);		
+	}
 
 }
