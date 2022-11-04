@@ -15,4 +15,6 @@ public interface IUserService {
     String deleteById(Long id);
     User save(User user);
 
+    User getUserByEmail(String email);
+
 }

@@ -16,5 +16,4 @@ public class FixedTermDepositDto implements Serializable {
     private Date creationDate;
     @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss.SSSZ")
     private Date closingDate;
-
 }

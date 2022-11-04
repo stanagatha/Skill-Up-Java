@@ -1,19 +1,27 @@
 package org.alkemy.wallet.controller;
 
-import org.springframework.http.HttpStatus;
+import org.alkemy.wallet.dto.FixedTermDepositDto;
+import org.alkemy.wallet.dto.FixedTermDepositRequestDto;
+
+import org.alkemy.wallet.service.IFixedTermDepositService;
+import org.alkemy.wallet.service.IUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/fixedDeposit")
 public class FixedTermDepositController {
+    private IFixedTermDepositService iFixedTermDepositService;
+    @Autowired
+    public FixedTermDepositController(IUserService iUserService ,IFixedTermDepositService iFixedTermDepositService) {
+        this.iFixedTermDepositService = iFixedTermDepositService;
+    }
 
-    @PostMapping("/fixedDeposit")
-    public ResponseEntity<Object> createFixedDeposit(@RequestParam double amount){
-        return new ResponseEntity<>("fixed deposit created", HttpStatus.CREATED);
+    @PostMapping("/")
+    public ResponseEntity<FixedTermDepositDto> createFixedDeposit(@RequestBody FixedTermDepositRequestDto deposit){
+        FixedTermDepositDto fixedTermDepositDto = iFixedTermDepositService.createDeposit(deposit);
+        return ResponseEntity.ok().body(fixedTermDepositDto);
     }
 
 }

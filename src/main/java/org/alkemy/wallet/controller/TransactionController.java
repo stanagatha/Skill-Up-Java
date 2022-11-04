@@ -29,7 +29,7 @@ public class TransactionController {
 
     @PostMapping("/deposit")
     public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto, @RequestParam("accountId") long accountId){
-        Account account = accountService.findById(accountId);
+        Account account = accountService.getById(accountId);
         transactionDto.setTypeTransaction(TypeTransaction.DEPOSIT.name());
         Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
         transaction.setAccountId(account);
@@ -38,7 +38,7 @@ public class TransactionController {
 
     @PostMapping("/payment")
     public ResponseEntity<?> payment(@RequestBody TransactionDto transactionDto, @RequestParam("accountId") long accountId){
-        Account account = accountService.findById(accountId);
+        Account account = accountService.getById(accountId);
         transactionDto.setTypeTransaction(TypeTransaction.PAYMENT.name());
         Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
         transaction.setAccountId(account);

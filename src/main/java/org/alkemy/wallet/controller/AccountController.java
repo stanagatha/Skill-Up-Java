@@ -31,7 +31,7 @@ public class AccountController {
         account.setCreationDate(new Date());
         account.setCurrency(currency);
         account.setBalance(0d);
-        iAccountService.saveAccount(account);
+        iAccountService.save(account);
         return new ResponseEntity<>("Account created", HttpStatus.CREATED);
     }
 }
