@@ -48,7 +48,18 @@ public class AuthController {
 	@Autowired
 	private IRoleService roleService;
 	
+	@PostMapping("/login")
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody UserLoginDto authenticationRequest) throws Exception {
 
+		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+
+		final UserDetails userDetails = userDetailsService
+				.loadUserByUsername(authenticationRequest.getEmail());
+
+		final String token = jwtTokenUtil.generateToken(userDetails);
+
+		return new ResponseEntity<ResponseJwtDto>(new ResponseJwtDto(token),null,HttpStatus.OK);
+	}
 
 	@ResponseStatus(code = HttpStatus.CREATED)
 	@PostMapping(value = "/register")
