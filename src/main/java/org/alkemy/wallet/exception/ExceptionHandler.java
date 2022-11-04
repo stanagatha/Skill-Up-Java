@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 @ControllerAdvice
 public class ExceptionHandler {
 
-    @org.springframework.web.bind.annotation.ExceptionHandler({CustomException.class})
+    @org.springframework.web.bind.annotation.ExceptionHandler({CustomException.class, IllegalArgumentException.class})
     @ResponseBody
     public ResponseEntity<String> badRequestExceptionHandler(HttpServletRequest req, RuntimeException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
@@ -21,10 +21,4 @@ public class ExceptionHandler {
     public ResponseEntity<String> notFoundExceptionHandler(HttpServletRequest req, RuntimeException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
-    
-    @org.springframework.web.bind.annotation.ExceptionHandler
-    public ResponseEntity<String> handleException(IllegalArgumentException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
 }
