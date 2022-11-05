@@ -11,10 +11,4 @@ import org.springframework.stereotype.Repository;
 public interface IAccountRepository extends JpaRepository<Account, Long>{
 
   public List<Account> findAllByUser(User user);
-<<<<<<< HEAD
-
-  public Account findByCurrencyAndUser(Currency currency, User user);
-
-=======
->>>>>>> b4b8dbf (add getAll method)
 }
