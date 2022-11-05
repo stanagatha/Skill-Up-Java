@@ -6,7 +6,6 @@ import org.alkemy.wallet.model.User;
 
 import java.util.List;
 
-
 public interface IUserService {
 
     UserDto getCurrent();
@@ -16,5 +15,7 @@ public interface IUserService {
     String deleteById(Long id);
 
     User save(User user);
+
+    List<String> getBalance();
 
 }
