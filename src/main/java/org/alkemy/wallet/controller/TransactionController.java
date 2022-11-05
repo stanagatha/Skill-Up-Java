@@ -22,12 +22,19 @@ public class TransactionController {
     @GetMapping("/{user_id}")
     public ResponseEntity<?> getAll(@PathVariable(name = "user_id") long userId){
         try {
+<<<<<<< HEAD
             return new ResponseEntity<>(transactionService.getAllByUser(userId), HttpStatus.OK);
         } catch (IllegalArgumentException illegalArgumentException){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             System.out.println("ERROR ON TRANSACTION CONTROLLER, GENERAL EXCEPTION");
             System.out.println(e.getMessage());
+=======
+            return new ResponseEntity<>(transactionService.getAll(userId), HttpStatus.OK);
+        } catch (IllegalArgumentException illegalArgumentException){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+>>>>>>> b4b8dbf (add getAll method)
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
