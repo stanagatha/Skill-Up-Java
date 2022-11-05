@@ -1,6 +1,5 @@
 package org.alkemy.wallet.service;
 
-
 import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.model.User;
 
