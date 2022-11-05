@@ -104,18 +104,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<String> getBalance() {
-        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        Long userId = userRepository.findByEmail(userEmail).getId();
-
-        List<AccountDto> accounts = accountService.findAllByUser(userId);
-        List<String> balances = new ArrayList<>();
-
-        for (AccountDto account : accounts) {
-            balances.add(account.getCurrency() + ": " + account.getBalance());
-        }
-
-        return balances;
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
 	@Override

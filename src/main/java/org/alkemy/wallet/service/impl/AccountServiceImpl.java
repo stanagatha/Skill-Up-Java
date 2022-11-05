@@ -3,6 +3,7 @@ package org.alkemy.wallet.service.impl;
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.mapper.AccountMapper;
 import org.alkemy.wallet.model.Account;
+import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.model.User;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IUserRepository;
@@ -71,6 +72,10 @@ public class AccountServiceImpl implements IAccountService {
 
         return null;
 
+    }
+    @Override
+    public Account findByCurrencyAndUser(Currency currency, User user){
+        return iAccountRepository.findByCurrencyAndUser(currency, user);
     }
 
 }
