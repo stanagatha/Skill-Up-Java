@@ -22,7 +22,7 @@ public class TransactionController {
     @GetMapping("/{user_id}")
     public ResponseEntity<?> getAll(@PathVariable(name = "user_id") long userId){
         try {
-            return new ResponseEntity<>(transactionService.getAll(userId), HttpStatus.OK);
+            return new ResponseEntity<>(transactionService.getAllByUser(userId), HttpStatus.OK);
         } catch (IllegalArgumentException illegalArgumentException){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {

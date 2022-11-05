@@ -7,5 +7,5 @@ public interface ITransactionService {
 
     public TransactionDto save(TransactionDto transaction);
 
-    public List<TransactionDto> getAll(long userId);
+    public List<TransactionDto> getAllByUser(long userId);
 }
