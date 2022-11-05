@@ -10,6 +10,7 @@ import org.alkemy.wallet.model.Transaction;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.ITransactionRepository;
 import org.alkemy.wallet.repository.IUserRepository;
+import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,14 +59,12 @@ public class TransactionServiceImpl implements ITransactionService {
 	public TransactionDto edit(long userId, long id, String description) {
 		return userRepository.findById(userId).map(user -> {
 			List<Account> accounts = accountRepository.findAllByUser(user);
-			transactionRepository.findById(id).ifPresent(t -> {
+			return transactionRepository.findById(id).map(t -> {
 				if(!accounts.contains(t.getAccountId())){
 					throw new IllegalArgumentException("transaction does not belong to current user: " + user.getEmail());
 				}
 				t.setDescript(description);
 				transactionRepository.save(t);
-			});
-			return transactionRepository.findById(id).map(t -> {
 				return transactionMapper.transactionToTransactionDto(t);
 			}).orElseThrow(IllegalArgumentException::new);
 		}).orElseThrow(IllegalArgumentException::new);
