@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/accounts")
 public class AccountController {
 
     private final IAccountService iAccountService;
@@ -25,21 +26,18 @@ public class AccountController {
     }
 
     @Secured("ADMIN")
-    @GetMapping("/accounts/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<List<AccountDto>> getAllByUserId(@PathVariable("userId") Long userId) {
-
         return ResponseEntity.ok().body(iAccountService.findAllByUser(userId));
-
     }
 
-    @PostMapping("/accounts")
     public ResponseEntity<AccountDto> createAccount(@RequestParam Currency currency){
         AccountDto account = iAccountService.createAccount(currency);
         return ResponseEntity.ok().body(account);
     }
 
-    @GetMapping("/account/balance")
-    public ResponseEntity<List<String>> test() {
+    @GetMapping("/balance")
+    public ResponseEntity<List<String>> getBalance() {
         return ResponseEntity.ok().body(iUserService.getBalance());
     }
 
