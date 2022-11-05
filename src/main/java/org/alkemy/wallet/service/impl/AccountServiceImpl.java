@@ -1,6 +1,7 @@
 package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.AccountDto;
+import org.alkemy.wallet.exception.NotFoundException;
 import org.alkemy.wallet.mapper.AccountMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Currency;
@@ -45,6 +46,9 @@ public class AccountServiceImpl implements IAccountService {
 
     @Override
     public List<AccountDto> findAllByUser(Long userId) {
+
+        if (userId == null || userId <= 0)
+            throw new NotFoundException("User id is not valid.");
 
         Optional<User> userOptional = userRepository.findById(userId);
 
