@@ -20,11 +20,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public UserDetails loadUserByUsername(String email) {
 		User user =  userRepository.findByEmail(email);
 		
-		if (user!=null) {			
-			return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
-					new ArrayList<>());
-		} else {
-			throw new NotFoundException("User not found: " + email); 
+		if (user==null) {
+			throw new NotFoundException("User not found: " + email);
 		}
+		
+		if(user.getSoftDelete().equals(true)) {
+			throw new NotFoundException("User not found: " + email);	
+		}
+		
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+					new ArrayList<>());		
 	}
 }
