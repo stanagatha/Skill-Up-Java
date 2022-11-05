@@ -1,5 +1,7 @@
 package org.alkemy.wallet.controller;
 
+import java.util.Map;
+
 import org.alkemy.wallet.dto.TransactionDto;
 import org.alkemy.wallet.model.TypeTransaction;
 import org.alkemy.wallet.service.ITransactionService;
@@ -20,12 +22,25 @@ public class TransactionController {
     }
 
     @GetMapping("/{user_id}")
-    public ResponseEntity<?> getAll(@PathVariable(name = "user_id") long userId){
+    public ResponseEntity<?> getAllByUser(@PathVariable(name = "user_id") long userId){
         try {
             return new ResponseEntity<>(transactionService.getAllByUser(userId), HttpStatus.OK);
         } catch (IllegalArgumentException illegalArgumentException){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> edit(@PathVariable(name = "id") long id, @RequestBody Map<String, String> requestBody){
+        try {
+            return new ResponseEntity<TransactionDto>(transactionService.edit(id, id, requestBody.get("description")), HttpStatus.OK);
+        } catch (IllegalArgumentException illegalArgumentException){
+            System.out.println("Error IAE edit method in transaction controller:\n" + illegalArgumentException.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            System.out.println("General error in edit method on transaction controller:\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
