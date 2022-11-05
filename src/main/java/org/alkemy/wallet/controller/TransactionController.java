@@ -23,6 +23,17 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
+    @GetMapping("/{user_id}")
+    public ResponseEntity<?> getAll(@PathVariable(name = "user_id") long userId){
+        try {
+            return new ResponseEntity<>(transactionService.getAll(userId), HttpStatus.OK);
+        } catch (IllegalArgumentException illegalArgumentException){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/deposit")
     public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.DEPOSIT.name());
