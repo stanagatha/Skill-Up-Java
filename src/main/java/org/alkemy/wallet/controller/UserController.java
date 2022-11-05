@@ -26,6 +26,11 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getAll());
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<UserDto> getCurrent(){
+        return ResponseEntity.ok().body(userService.getCurrent());
+    }
+
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteById(@PathVariable("userId") Long id){
         return ResponseEntity.ok().body(userService.deleteById(id));
