@@ -57,7 +57,7 @@ public class JwtTokenUtil implements Serializable {
 		return doGenerateToken(claims, userDetails.getUsername());
 	}
 
-	// Definir claims del token, firmar y compactar
+	// Define token claims, sign and compact
 	private String doGenerateToken(Map<String, Object> claims, String subject) {
 		return Jwts.builder()
 				   .setClaims(claims)
