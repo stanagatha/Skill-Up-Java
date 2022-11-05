@@ -30,5 +30,6 @@ public abstract class TransactionMapper {
     @InheritInverseConfiguration
     public abstract TransactionDto transactionToTransactionDto(Transaction transaction);
     public abstract List<TransactionDto> toTransactionsDto(List<Transaction> transaction);
+    public abstract List<Transaction> toTransactions(List<TransactionDto> transactionsDto);
 
 }
