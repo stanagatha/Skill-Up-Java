@@ -1,14 +1,13 @@
 package org.alkemy.wallet.service;
 
-
 import org.alkemy.wallet.dto.UserDto;
+import org.alkemy.wallet.model.User;
 
 import java.util.List;
 
-import org.alkemy.wallet.model.User;
-
-
 public interface IUserService {
+
+    UserDto getCurrent();
 
     List<UserDto> getAll();
 
@@ -17,5 +16,9 @@ public interface IUserService {
     User save(User user);
 
     List<String> getBalance();
+
+    User findUserByEmail(String email);
+
+	  void createAccounts(User userSaved);
 
 }

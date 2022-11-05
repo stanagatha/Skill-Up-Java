@@ -2,6 +2,9 @@ package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.exception.CustomException;
+
+import org.alkemy.wallet.exception.NotFoundException;
+
 import org.alkemy.wallet.mapper.AccountMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Currency;
@@ -49,6 +52,9 @@ public class AccountServiceImpl implements IAccountService {
     @Override
     public List<AccountDto> findAllByUser(Long userId) {
 
+        if (userId == null || userId <= 0)
+            throw new NotFoundException("User id is not valid.");
+
         Optional<User> userOptional = userRepository.findById(userId);
 
         if(userOptional.isPresent()){
@@ -77,6 +83,7 @@ public class AccountServiceImpl implements IAccountService {
 
     }
     @Override
+
     public AccountDto createAccount(Currency currency){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
@@ -105,6 +112,7 @@ public class AccountServiceImpl implements IAccountService {
         account.setTransactionLimit(limit);
         return accountMapper.accountToAccountDto(iAccountRepository.save(account));
 
-    }
+
+ 
 
 }
