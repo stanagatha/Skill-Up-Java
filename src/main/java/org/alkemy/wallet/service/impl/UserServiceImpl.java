@@ -102,4 +102,9 @@ public class UserServiceImpl implements IUserService {
         return balances;
     }
 
+    @Override
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }
