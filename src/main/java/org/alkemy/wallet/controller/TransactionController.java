@@ -17,14 +17,10 @@ import org.springframework.web.bind.annotation.*;
 public class TransactionController {
 
     private final ITransactionService transactionService;
-    private final TransactionMapper transactionMapper;
-    private final IAccountService accountService;
 
     @Autowired
-    public TransactionController(ITransactionService transactionService, TransactionMapper transactionMapper, IAccountService accountService) {
+    public TransactionController(ITransactionService transactionService) {
         this.transactionService = transactionService;
-        this.transactionMapper = transactionMapper;
-        this.accountService = accountService;
     }
 
     @GetMapping("/{user_id}")
@@ -39,21 +35,15 @@ public class TransactionController {
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto, @RequestParam("accountId") long accountId){
-        Account account = accountService.findById(accountId);
+    public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.DEPOSIT.name());
-        Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
-        transaction.setAccountId(account);
-        return new ResponseEntity<>(transactionService.save(transaction), HttpStatus.OK);
+        return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
     }
 
     @PostMapping("/payment")
-    public ResponseEntity<?> payment(@RequestBody TransactionDto transactionDto, @RequestParam("accountId") long accountId){
-        Account account = accountService.findById(accountId);
+    public ResponseEntity<?> payment(@RequestBody TransactionDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.PAYMENT.name());
-        Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
-        transaction.setAccountId(account);
-        return new ResponseEntity<>(transactionService.save(transaction), HttpStatus.OK);
+        return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
     }
 
 }

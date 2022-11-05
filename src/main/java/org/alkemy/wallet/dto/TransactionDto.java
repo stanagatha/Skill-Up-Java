@@ -14,4 +14,5 @@ public class TransactionDto implements Serializable {
     private String descript;
     @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss.SSSZ")
     private Date transactionDate;
+    private Long accountId;
 }
