@@ -34,9 +34,8 @@ public class SecurityConfig {
 
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		// Configurar AuthenticationManager
-		// para que sepa desde dónde cargar al usuario para verificar las credenciales
-		// Usar BCryptPasswordEncoder
+		// Configure AuthenticationManager so it knows where to load the user from to verify credentials
+		// Use BCryptPasswordEncoder
 		auth.userDetailsService(jwtUserDetailsService).passwordEncoder(passwordEncoder());
 	}
 
@@ -53,11 +52,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
-        			// No solicitar autorización para las siguientes rutas
+        			// Do not request authorization for the following routes
 					.authorizeRequests()
 					.antMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**")				
 					.permitAll().
-					// Para todas las demas rutas es necesario estar autenticado
+					// For all other routes it is necessary to be authenticated
 					anyRequest().authenticated().and().
 					exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
 					.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
