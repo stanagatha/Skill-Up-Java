@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -101,5 +102,26 @@ public class UserServiceImpl implements IUserService {
 
         return balances;
     }
+
+	@Override
+	public void createAccounts(User userSaved) {
+		// ARS
+        Account accountARS = new Account();
+        accountARS.setCreationDate(new Date());
+        accountARS.setCurrency(Currency.ARS);
+        accountARS.setBalance(0d);
+        accountARS.setTransactionLimit(300000.00);
+        accountARS.setUser(userSaved);
+        accountService.saveAccount(accountARS);
+        
+        // USD
+        Account accountUSD = new Account();
+        accountUSD.setCreationDate(new Date());
+        accountUSD.setCurrency(Currency.USD);
+        accountUSD.setBalance(0d);
+        accountUSD.setTransactionLimit(1000.00);
+        accountUSD.setUser(userSaved);
+        accountService.saveAccount(accountUSD);
+	}
 
 }
