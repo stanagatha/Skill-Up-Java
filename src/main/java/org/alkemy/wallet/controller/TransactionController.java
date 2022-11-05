@@ -32,6 +32,19 @@ public class TransactionController {
         }
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> edit(@PathVariable(name = "id") long id, @RequestBody Map<String, String> requestBody){
+        try {
+            return new ResponseEntity<TransactionDto>(transactionService.edit(id, id, requestBody.get("description")), HttpStatus.OK);
+        } catch (IllegalArgumentException illegalArgumentException){
+            System.out.println("Error IAE edit method in transaction controller:\n" + illegalArgumentException.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            System.out.println("General error in edit method on transaction controller:\n" + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/deposit")
     public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.DEPOSIT.name());

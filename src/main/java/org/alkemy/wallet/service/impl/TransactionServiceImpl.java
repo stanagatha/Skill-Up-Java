@@ -21,38 +21,52 @@ import java.util.Date;
 @Service
 public class TransactionServiceImpl implements ITransactionService {
 
-    private final ITransactionRepository transactionRepository;
-    private final TransactionMapper transactionMapper;
-    private final IAccountService accountService;
-    private final IUserRepository userRepository;
-    private final IAccountRepository accountRepository;
+	private final ITransactionRepository transactionRepository;
+	private final TransactionMapper transactionMapper;
+	private final IAccountService accountService;
+	private final IUserRepository userRepository;
+	private final IAccountRepository accountRepository;
 
-    @Override
-    @Transactional
-    public TransactionDto save(TransactionDto transactionDto) {
-        if(transactionDto.getAmount() <=0){
-            throw new IllegalArgumentException("Amount must be greater than 0");
-        }
-        transactionDto.setTransactionDate(new Date(Calendar.getInstance().getTimeInMillis()));
-        Account account = accountService.findById(transactionDto.getAccountId());
-        Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
-        transaction.setAccountId(account);
-        return transactionMapper.transactionToTransactionDto(transactionRepository.save(transaction));
-    }
+	@Override
+	@Transactional
+	public TransactionDto save(TransactionDto transactionDto) {
+		if (transactionDto.getAmount() <= 0) {
+			throw new IllegalArgumentException("Amount must be greater than 0");
+		}
+		transactionDto.setTransactionDate(new Date(Calendar.getInstance().getTimeInMillis()));
+		Account account = accountService.findById(transactionDto.getAccountId());
+		Transaction transaction = transactionMapper.transactionDtoToTransaction(transactionDto);
+		transaction.setAccountId(account);
+		return transactionMapper.transactionToTransactionDto(transactionRepository.save(transaction));
+	}
 
-    @Override
-    public List<TransactionDto> getAllByUser(long userId) {
-        return userRepository.findById(userId).map(user -> {
-            List<Account> accounts= accountRepository.findAllByUser(user);
-            List<Transaction> transactions= new ArrayList<>();
-            accounts.forEach(acc -> {
-                transactions.addAll(transactionRepository.findAllByAccountId(acc));
-            });
-            System.out.println("Get all, no users");
-            transactions.forEach(System.out::println);;
-            //implemente mapper;
-            return null;
-        }).orElse(null);
-    }
+	@Override
+	public List<TransactionDto> getAllByUser(long userId) {
+		return userRepository.findById(userId).map(user -> {
+			List<Account> accounts = accountRepository.findAllByUser(user);
+			List<Transaction> transactions = new ArrayList<>();
+			accounts.forEach(acc -> {
+				transactions.addAll(transactionRepository.findAllByAccountId(acc));
+			});
+			return transactionMapper.toTransactionsDto(transactions);
+		}).orElseThrow(IllegalArgumentException::new);
+	}
+
+	@Override
+	public TransactionDto edit(long userId, long id, String description) {
+		return userRepository.findById(userId).map(user -> {
+			List<Account> accounts = accountRepository.findAllByUser(user);
+			transactionRepository.findById(id).ifPresent(t -> {
+				if(!accounts.contains(t.getAccountId())){
+					throw new IllegalArgumentException("transaction does not belong to current user: " + user.getEmail());
+				}
+				t.setDescript(description);
+				transactionRepository.save(t);
+			});
+			return transactionRepository.findById(id).map(t -> {
+				return transactionMapper.transactionToTransactionDto(t);
+			}).orElseThrow(IllegalArgumentException::new);
+		}).orElseThrow(IllegalArgumentException::new);
+	}
 
 }
