@@ -41,7 +41,7 @@ public class TransactionServiceImpl implements ITransactionService {
     }
 
     @Override
-    public List<TransactionDto> getAll(long userId) {
+    public List<TransactionDto> getAllByUser(long userId) {
         return userRepository.findById(userId).map(user -> {
             List<Account> accounts= accountRepository.findAllByUser(user);
             List<Transaction> transactions= new ArrayList<>();
