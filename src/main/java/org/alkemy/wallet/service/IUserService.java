@@ -17,4 +17,6 @@ public interface IUserService {
 
     List<String> getBalance();
 
+	void createAccounts(User userSaved);
+
 }

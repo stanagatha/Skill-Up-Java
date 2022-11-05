@@ -4,10 +4,13 @@ import java.util.Date;
 
 import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.dto.UserRegisterDto;
+import org.alkemy.wallet.model.Account;
+import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.model.Role;
 import org.alkemy.wallet.model.RoleName;
 import org.alkemy.wallet.model.User;
 import org.alkemy.wallet.security.JwtTokenUtil;
+import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IRoleService;
 import org.alkemy.wallet.service.IUserService;
 import org.alkemy.wallet.service.impl.UserDetailsServiceImpl;
@@ -75,7 +78,9 @@ public class AuthController {
 		
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(userSaved.getEmail());
-
+		
+		userService.createAccounts(userSaved);
+				
 		final String token = jwtTokenUtil.generateToken(userDetails);
 	
 		return new ResponseEntity<ResponseJwtDto>(new ResponseJwtDto(token),null,HttpStatus.CREATED);
