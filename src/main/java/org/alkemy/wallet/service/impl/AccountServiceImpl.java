@@ -1,8 +1,8 @@
 package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.AccountDto;
-import org.alkemy.wallet.exception.CustomException;
 
+import org.alkemy.wallet.exception.ForbiddenException;
 import org.alkemy.wallet.exception.NotFoundException;
 
 import org.alkemy.wallet.mapper.AccountMapper;
@@ -72,7 +72,6 @@ public class AccountServiceImpl implements IAccountService {
                     accountsDto.add(accountDto);
 
                 }
-
             }
 
             return accountsDto;
@@ -83,17 +82,17 @@ public class AccountServiceImpl implements IAccountService {
 
     }
     @Override
-
-    public AccountDto createAccount(Currency currency){
+    @Transactional
+    public AccountDto createAccount(Currency currency) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
         List<Account> accounts = iAccountRepository.findAllByUser(user);
-        if (user == null){
-            throw new CustomException("Not user found");
+        if (user == null) {
+            throw new NotFoundException("User not found");
         }
         accounts.forEach(account -> {
-            if (account.getCurrency() == currency){
-                throw new CustomException("Account already exist");
+            if (account.getCurrency() == currency) {
+                throw new ForbiddenException("The account of this currency already exists");
             }
         });
         Account account = new Account();
@@ -104,15 +103,14 @@ public class AccountServiceImpl implements IAccountService {
         account.setSoftDelete(false);
         account.setUser(user);
         double limit = 0;
-        if (currency == Currency.ARS){
+        if (currency == Currency.ARS) {
             limit = 300000.0;
-        }else {
+        } else {
             limit = 1000.0;
         }
         account.setTransactionLimit(limit);
         return accountMapper.accountToAccountDto(iAccountRepository.save(account));
 
-
- 
+    }
 
 }

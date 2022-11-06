@@ -8,13 +8,16 @@ import org.alkemy.wallet.mapper.FixedTermDepositMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.FixedTermDeposit;
 import org.alkemy.wallet.model.User;
+import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IFixedTermDepositRepository;
+import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IFixedTermDepositService;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -22,15 +25,15 @@ import java.util.Date;
 public class FixedTermDepositImpl implements IFixedTermDepositService {
 
     private final IFixedTermDepositRepository iFixedTermDepositRepository;
-    private final IUserService iUserService;
-    private final IAccountService iAccountService;
+    private final IUserRepository iUserRepository;
+    private final IAccountRepository iAccountRepository;
     private final FixedTermDepositMapper fixedTermDepositMapper;
 
     @Autowired
-    public FixedTermDepositImpl(FixedTermDepositMapper fixedTermDepositMapper, IAccountService iAccountService, IUserService iUserService, IFixedTermDepositRepository iFixedTermDepositRepository) {
+    public FixedTermDepositImpl(FixedTermDepositMapper fixedTermDepositMapper, IAccountRepository iAccountRepository, IUserRepository iUserRepository, IFixedTermDepositRepository iFixedTermDepositRepository) {
         this.iFixedTermDepositRepository = iFixedTermDepositRepository;
-        this.iUserService = iUserService;
-        this.iAccountService = iAccountService;
+        this.iUserRepository = iUserRepository;
+        this.iAccountRepository = iAccountRepository;
         this.fixedTermDepositMapper = fixedTermDepositMapper;
     }
 
@@ -39,10 +42,11 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
         iFixedTermDepositRepository.save(fixedTermDeposit);
     }
     @Override
+    @Transactional
     public FixedTermDepositDto createDeposit(FixedTermDepositRequestDto depositRequestDto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = iUserService.findUserByEmail(email);
-        Account account = iAccountService.findByCurrencyAndUser(depositRequestDto.getCurrency(), user);
+        User user = iUserRepository.findByEmail(email);
+        Account account = iAccountRepository.findByCurrencyAndUser(depositRequestDto.getCurrency(), user);
 
         if (user == null || account == null){
             throw new NotFoundException("Not exist");
@@ -65,7 +69,7 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
         fixedTermDeposit.setInterest(interest);
         fixedTermDeposit.setUserId(user);
         account.setBalance(account.getBalance()-depositRequestDto.getAmount());
-        iAccountService.saveAccount(account);
+        iAccountRepository.save(account);
         return  fixedTermDepositMapper.fixedTermDepositToFixedTermDepositDto(iFixedTermDepositRepository.save(fixedTermDeposit));
 
 

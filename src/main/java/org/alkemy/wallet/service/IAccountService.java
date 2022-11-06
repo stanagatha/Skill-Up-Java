@@ -17,7 +17,5 @@ public interface IAccountService {
     List<AccountDto> findAllByUser(Long userId);
 
     AccountDto createAccount(Currency currency);
-    Account findByCurrencyAndUser(Currency currency, User user);
-
 
 }
