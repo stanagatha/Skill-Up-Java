@@ -30,7 +30,7 @@ public class AccountController {
     public ResponseEntity<List<AccountDto>> getAllByUserId(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok().body(iAccountService.findAllByUser(userId));
     }
-
+    @PostMapping("")
     public ResponseEntity<AccountDto> createAccount(@RequestParam Currency currency){
         AccountDto account = iAccountService.createAccount(currency);
         return ResponseEntity.ok().body(account);
