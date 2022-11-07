@@ -1,37 +1,35 @@
 package org.alkemy.wallet.mapper;
 
+import java.util.List;
+
 import org.alkemy.wallet.dto.TransactionDto;
+import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Transaction;
-import org.alkemy.wallet.model.TypeTransaction;
-import org.springframework.stereotype.Component;
+import org.alkemy.wallet.service.impl.AccountServiceImpl;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.Mapper;
 
-@Component
-public class TransactionMapper {
-    public Transaction transactionDtoToTransaction(TransactionDto transactionDto){
-        if (transactionDto == null)
-            return null;
+import lombok.NoArgsConstructor;
 
-        Transaction transaction = new Transaction();
-        transaction.setId(transactionDto.getId());
-        transaction.setAmount(transactionDto.getAmount());
-        transaction.setTypeTransaction(TypeTransaction.valueOf(transactionDto.getTypeTransaction()));
-        transaction.setDescript(transactionDto.getDescript());
-        transaction.setTransactionDate(transactionDto.getTransactionDate());
+@Mapper(componentModel = "spring")
+@NoArgsConstructor
+public abstract class TransactionMapper {
 
-        return transaction;
+    private AccountServiceImpl accountService;
+
+    public abstract Transaction transactionDtoToTransaction(TransactionDto transactionDto);
+
+    protected Account toAccount(long accountId){
+        return accountService.findById(accountId);
     }
 
-    public TransactionDto transactionToTransactionDto(Transaction transaction){
-        if (transaction == null)
-            return null;
-
-        TransactionDto transactionDto = new TransactionDto();
-        transactionDto.setId(transaction.getId());
-        transactionDto.setAmount(transaction.getAmount());
-        transactionDto.setTypeTransaction(transaction.getTypeTransaction().name());
-        transactionDto.setDescript(transaction.getDescript());
-        transactionDto.setTransactionDate(transaction.getTransactionDate());
-
-        return transactionDto;
+    protected long toAccountDto(Account account){
+        return account.getId();
     }
+
+    @InheritInverseConfiguration
+    public abstract TransactionDto transactionToTransactionDto(Transaction transaction);
+    public abstract List<TransactionDto> toTransactionsDto(List<Transaction> transaction);
+    public abstract List<Transaction> toTransactions(List<TransactionDto> transactionsDto);
+
 }

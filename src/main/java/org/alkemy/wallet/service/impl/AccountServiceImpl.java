@@ -1,6 +1,10 @@
 package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.AccountDto;
+
+import org.alkemy.wallet.exception.ForbiddenException;
+import org.alkemy.wallet.exception.NotFoundException;
+
 import org.alkemy.wallet.mapper.AccountMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Currency;
@@ -9,10 +13,12 @@ import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +52,9 @@ public class AccountServiceImpl implements IAccountService {
     @Override
     public List<AccountDto> findAllByUser(Long userId) {
 
+        if (userId == null || userId <= 0)
+            throw new NotFoundException("User id is not valid.");
+
         Optional<User> userOptional = userRepository.findById(userId);
 
         if(userOptional.isPresent()){
@@ -63,7 +72,6 @@ public class AccountServiceImpl implements IAccountService {
                     accountsDto.add(accountDto);
 
                 }
-
             }
 
             return accountsDto;
@@ -74,8 +82,35 @@ public class AccountServiceImpl implements IAccountService {
 
     }
     @Override
-    public Account findByCurrencyAndUser(Currency currency, User user){
-        return iAccountRepository.findByCurrencyAndUser(currency, user);
+    @Transactional
+    public AccountDto createAccount(Currency currency) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email);
+        List<Account> accounts = iAccountRepository.findAllByUser(user);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+        accounts.forEach(account -> {
+            if (account.getCurrency() == currency) {
+                throw new ForbiddenException("The account of this currency already exists");
+            }
+        });
+        Account account = new Account();
+        account.setBalance(0.0);
+        account.setCurrency(currency);
+        account.setCreationDate(new Date());
+        account.setUpdateDate(new Date());
+        account.setSoftDelete(false);
+        account.setUser(user);
+        double limit = 0;
+        if (currency == Currency.ARS) {
+            limit = 300000.0;
+        } else {
+            limit = 1000.0;
+        }
+        account.setTransactionLimit(limit);
+        return accountMapper.accountToAccountDto(iAccountRepository.save(account));
+
     }
 
 }
