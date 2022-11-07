@@ -1,11 +1,7 @@
 package org.alkemy.wallet.controller;
 
 import org.alkemy.wallet.dto.TransactionDto;
-import org.alkemy.wallet.mapper.TransactionMapper;
-import org.alkemy.wallet.model.Account;
-import org.alkemy.wallet.model.Transaction;
 import org.alkemy.wallet.model.TypeTransaction;
-import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,5 +30,11 @@ public class TransactionController {
         transactionDto.setTypeTransaction(TypeTransaction.PAYMENT.name());
         return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<TransactionDto> findById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(transactionService.findById(id));
+    }
+
+
 
 }
