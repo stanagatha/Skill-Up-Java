@@ -1,6 +1,8 @@
 package org.alkemy.wallet.controller;
 
 import org.alkemy.wallet.dto.TransactionDto;
+import org.alkemy.wallet.dto.TransactionSendMoneyDto;
+import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.model.TypeTransaction;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,12 @@ public class TransactionController {
     public ResponseEntity<?> payment(@RequestBody TransactionDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.PAYMENT.name());
         return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/sendUsd")
+    public ResponseEntity<TransactionDto> sendUsd(@RequestBody TransactionSendMoneyDto transactionSendMoneyDto){
+        TransactionDto transaction = transactionService.send(transactionSendMoneyDto, Currency.USD);
+        return ResponseEntity.ok().body(transaction);
     }
 
 }
