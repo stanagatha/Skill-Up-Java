@@ -105,6 +105,7 @@ public class TransactionServiceImpl implements ITransactionService {
     }
 
 	@Override
+	@Transactional
 	public TransactionDto edit(long userId, long id, String description) {
 		return userRepository.findById(userId).map(user -> {
 			List<Account> accounts = accountRepository.findAllByUser(user);
