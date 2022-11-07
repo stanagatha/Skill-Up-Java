@@ -1,6 +1,7 @@
 package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.TransactionDto;
+import org.alkemy.wallet.exception.NotFoundException;
 import org.alkemy.wallet.mapper.TransactionMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Transaction;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class TransactionServiceImpl implements ITransactionService {
@@ -41,4 +43,14 @@ public class TransactionServiceImpl implements ITransactionService {
         return transactionMapper.transactionToTransactionDto(transactionRepository.save(transaction));
     }
 
+    @Override
+    @Transactional
+    public TransactionDto findById(Long id) {
+        Optional<Transaction> transactionById = transactionRepository.findByIdTransaction(id);
+        if (transactionById.isEmpty()) {
+            throw new NotFoundException("No transaction with id: " + id);
+        }
+        Transaction transaction = transactionById.get();
+        return transactionMapper.transactionToTransactionDto(transaction);
+    }
 }
