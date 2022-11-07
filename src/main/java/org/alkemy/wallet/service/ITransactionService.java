@@ -18,4 +18,6 @@ public interface ITransactionService {
 
     public TransactionDto edit(long userId, long id, String description);
 
+    TransactionDto findById(Long id);
+
 }

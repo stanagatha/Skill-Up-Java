@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class TransactionServiceImpl implements ITransactionService {
@@ -48,6 +49,17 @@ public class TransactionServiceImpl implements ITransactionService {
     }
 
     @Override
+    @Transactional
+    public TransactionDto findById(Long id) {
+        Optional<Transaction> transactionById = transactionRepository.findByIdTransaction(id);
+        if (transactionById.isEmpty()) {
+            throw new NotFoundException("No transaction with id: " + id);
+        }
+        Transaction transaction = transactionById.get();
+        return transactionMapper.transactionToTransactionDto(transaction);
+    }
+
+    @Override
     public List<TransactionDto> getAllByUser(long userId) {
         return userRepository.findById(userId).map(user -> {
             List<Account> accounts= accountRepository.findAllByUser(user);
@@ -58,6 +70,7 @@ public class TransactionServiceImpl implements ITransactionService {
             return transactionMapper.toTransactionsDto(transactions);
         }).orElse(null);
     }
+    
     @Override
     @Transactional
     public TransactionDto send(TransactionSendMoneyDto transactionSendMoneyDto, Currency currency) {
@@ -125,5 +138,4 @@ public class TransactionServiceImpl implements ITransactionService {
 			return new BadRequestException("User not found");
 		});
 	}
-
 }

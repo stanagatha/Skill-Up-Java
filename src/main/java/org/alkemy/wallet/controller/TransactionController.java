@@ -56,6 +56,11 @@ public class TransactionController {
         transactionDto.setTypeTransaction(TypeTransaction.PAYMENT.name());
         return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TransactionDto> findById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(transactionService.findById(id));
+    }
     
     @PostMapping("/sendArs")
     public ResponseEntity<TransactionDto> sendArs(@RequestBody TransactionSendMoneyDto transactionSendMoneyDto){
@@ -63,12 +68,7 @@ public class TransactionController {
         return ResponseEntity.ok().body(transaction);
     }
 
-    @PostMapping("/sendArs")
-    public ResponseEntity<TransactionDto> sendArs(@RequestBody TransactionSendMoneyDto transactionSendMoneyDto){
-        TransactionDto transaction = transactionService.send(transactionSendMoneyDto, Currency.ARS);
-        return ResponseEntity.ok().body(transaction);
-    }
-    @PostMapping("/sendArs")
+    @PostMapping("/sendUsd")
     public ResponseEntity<TransactionDto> sendUsd(@RequestBody TransactionSendMoneyDto transactionSendMoneyDto){
         TransactionDto transaction = transactionService.send(transactionSendMoneyDto, Currency.USD);
         return ResponseEntity.ok().body(transaction);
