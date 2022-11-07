@@ -28,8 +28,11 @@ public class TransactionController {
         } catch (IllegalArgumentException illegalArgumentException){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+<<<<<<< HEAD
             System.out.println("ERROR ON TRANSACTION CONTROLLER, GENERAL EXCEPTION");
             System.out.println(e.getMessage());
+=======
+>>>>>>> develop
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

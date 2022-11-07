@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alkemy.wallet.dto.TransactionDto;
-import org.alkemy.wallet.mapper.TransactionMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Transaction;
 import org.alkemy.wallet.repository.IAccountRepository;
