@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alkemy.wallet.dto.TransactionDto;
-<<<<<<< HEAD
 import org.alkemy.wallet.exception.BadRequestException;
-=======
 import org.alkemy.wallet.dto.TransactionSendMoneyDto;
 import org.alkemy.wallet.exception.NotFoundException;
->>>>>>> develop
 import org.alkemy.wallet.mapper.TransactionMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Currency;
