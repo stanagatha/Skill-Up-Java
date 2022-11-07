@@ -102,4 +102,19 @@ public class TransactionServiceImpl implements ITransactionService {
         return transactionMapper.transactionToTransactionDto(transactionRepository.save(transaction));
     }
 
+	@Override
+	public TransactionDto edit(long userId, long id, String description) {
+		return userRepository.findById(userId).map(user -> {
+			List<Account> accounts = accountRepository.findAllByUser(user);
+			return transactionRepository.findById(id).map(t -> {
+				if(!accounts.contains(t.getAccountId())){
+					throw new IllegalArgumentException("transaction does not belong to current user: " + user.getEmail());
+				}
+				t.setDescript(description);
+				transactionRepository.save(t);
+				return transactionMapper.transactionToTransactionDto(t);
+			}).orElseThrow(IllegalArgumentException::new);
+		}).orElseThrow(IllegalArgumentException::new);
+	}
+
 }

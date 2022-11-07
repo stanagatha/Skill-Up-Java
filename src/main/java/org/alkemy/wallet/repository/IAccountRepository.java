@@ -13,6 +13,5 @@ public interface IAccountRepository extends JpaRepository<Account, Long>{
 
   public List<Account> findAllByUser(User user);
 
-  public Account findByCurrencyAndUser(Currency currency, User user);
-
+  Account findByCurrencyAndUser(Currency currency, User user);
 }

@@ -10,9 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 public interface ITransactionService {
 
     public TransactionDto save(TransactionDto transaction);
-
     public List<TransactionDto> getAllByUser(long userId);
+
 
     @Transactional
     TransactionDto send(TransactionSendMoneyDto transactionSendMoneyDto, Currency currency);
+
+    public TransactionDto edit(long userId, long id, String description);
+
 }
