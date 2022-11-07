@@ -15,30 +15,30 @@ import java.util.List;
 @RequestMapping("/accounts")
 public class AccountController {
 
-    private final IAccountService iAccountService;
+    private final IAccountService accountService;
 
-    private final IUserService iUserService;
+    private final IUserService userService;
 
     @Autowired
-    public AccountController(IAccountService iAccountService, IUserService iUserService) {
-        this.iAccountService = iAccountService;
-        this.iUserService = iUserService;
+    public AccountController(IAccountService accountService, IUserService userService) {
+        this.accountService = accountService;
+        this.userService = userService;
     }
 
     @Secured("ADMIN")
     @GetMapping("/{userId}")
     public ResponseEntity<List<AccountDto>> getAllByUserId(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok().body(iAccountService.findAllByUser(userId));
+        return ResponseEntity.ok().body(accountService.findAllByUser(userId));
     }
-    @PostMapping("")
+
+    @PostMapping
     public ResponseEntity<AccountDto> createAccount(@RequestParam Currency currency){
-        AccountDto account = iAccountService.createAccount(currency);
-        return ResponseEntity.ok().body(account);
+        return ResponseEntity.ok().body(accountService.createAccount(currency));
     }
 
     @GetMapping("/balance")
     public ResponseEntity<List<String>> getBalance() {
-        return ResponseEntity.ok().body(iUserService.getBalance());
+        return ResponseEntity.ok().body(userService.getBalance());
     }
 
 }
