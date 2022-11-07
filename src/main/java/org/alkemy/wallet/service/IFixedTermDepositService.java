@@ -6,7 +6,7 @@ import org.alkemy.wallet.model.FixedTermDeposit;
 
 public interface IFixedTermDepositService {
 
-    public void saveFixedDeposit(FixedTermDeposit fixedTermDeposit);
+    void saveFixedDeposit(FixedTermDeposit fixedTermDeposit);
 
     FixedTermDepositDto createDeposit(FixedTermDepositRequestDto depositRequestDto);
 }
