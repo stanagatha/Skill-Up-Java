@@ -51,5 +51,10 @@ public class TransactionController {
         TransactionDto transaction = transactionService.send(transactionSendMoneyDto, Currency.USD);
         return ResponseEntity.ok().body(transaction);
     }
+    @PostMapping("/sendArs")
+    public ResponseEntity<TransactionDto> sendArs(@RequestBody TransactionSendMoneyDto transactionSendMoneyDto){
+        TransactionDto transaction = transactionService.send(transactionSendMoneyDto, Currency.ARS);
+        return ResponseEntity.ok().body(transaction);
+    }
 
 }
