@@ -29,6 +29,6 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID", nullable = false)
-    private Account accountId;
+    private Account account;
 
 }

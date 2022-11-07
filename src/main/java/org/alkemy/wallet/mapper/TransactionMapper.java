@@ -1,15 +1,47 @@
 package org.alkemy.wallet.mapper;
 
-import java.util.List;
-
 import org.alkemy.wallet.dto.TransactionDto;
-import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Transaction;
-import org.alkemy.wallet.service.impl.AccountServiceImpl;
-import org.mapstruct.InheritInverseConfiguration;
-import org.mapstruct.Mapper;
 
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TransactionMapper{
+
+    /*
+    public Transaction transactionDtoToTransaction(TransactionDto transactionDto){
+        if (transactionDto == null)
+            return null;
+
+        Transaction transaction = new Transaction();
+        transaction.setId(transactionDto.getId());
+        transaction.setAmount(transactionDto.getAmount());
+        transaction.setDescript(transaction.getDescript());
+        transaction.setTypeTransaction(TypeTransaction.valueOf(transactionDto.getTypeTransaction()));
+        // TODO
+        transaction.setTransactionDate(transactionDto.getTransactionDate());
+
+        return transaction;
+    }
+    */
+
+    public TransactionDto transactionToTransactionDto(Transaction transaction){
+        if (transaction == null)
+            return null;
+
+        TransactionDto transactionDto = new TransactionDto();
+        transactionDto.setId(transaction.getId());
+        transactionDto.setAmount(transaction.getAmount());
+        transactionDto.setDescription(transaction.getDescript());
+        transactionDto.setTypeTransaction(transaction.getTypeTransaction());
+        transactionDto.setAccountId(transaction.getAccount().getId());
+        transactionDto.setTransactionDate(transaction.getTransactionDate());
+
+        return transactionDto;
+    }
+}
+
+/*
 
 @Mapper(componentModel = "spring")
 @NoArgsConstructor
@@ -33,3 +65,5 @@ public abstract class TransactionMapper {
     public abstract List<Transaction> toTransactions(List<TransactionDto> transactionsDto);
 
 }
+
+ */
