@@ -1,20 +1,16 @@
 package org.alkemy.wallet.controller;
 
-import java.util.Date;
 
-import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.dto.UserRegisterDto;
-import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Currency;
-import org.alkemy.wallet.model.Role;
 import org.alkemy.wallet.model.RoleName;
 import org.alkemy.wallet.model.User;
+import org.alkemy.wallet.repository.IRoleRepository;
 import org.alkemy.wallet.security.JwtTokenUtil;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IRoleService;
 import org.alkemy.wallet.service.IUserService;
 import org.alkemy.wallet.service.impl.UserDetailsServiceImpl;
-import org.alkemy.wallet.service.impl.UserServiceImpl;
 import org.alkemy.wallet.dto.UserLoginDto;
 import org.alkemy.wallet.dto.ResponseJwtDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +46,12 @@ public class AuthController {
 	
 	@Autowired
 	private IRoleService roleService;
+
+	@Autowired
+	private IAccountService accountService;
+
+	@Autowired
+	private IRoleRepository roleRepository;
 	
 	@PostMapping("/login")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody UserLoginDto authenticationRequest) throws Exception {
@@ -73,14 +75,15 @@ public class AuthController {
 				user.getLastName(),
 				user.getEmail(),
 				user.getPassword(),
-				roleService.findByRoleName(RoleName.USER)
+				roleRepository.findByRoleName(RoleName.USER)
 				));
 		
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(userSaved.getEmail());
 		
-		userService.createAccounts(userSaved);
-				
+		accountService.createAccount(userSaved, Currency.ARS);
+		accountService.createAccount(userSaved, Currency.USD);
+
 		final String token = jwtTokenUtil.generateToken(userDetails);
 	
 		return new ResponseEntity<ResponseJwtDto>(new ResponseJwtDto(token),null,HttpStatus.CREATED);

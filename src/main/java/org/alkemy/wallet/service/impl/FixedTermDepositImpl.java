@@ -11,9 +11,7 @@ import org.alkemy.wallet.model.User;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IFixedTermDepositRepository;
 import org.alkemy.wallet.repository.IUserRepository;
-import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IFixedTermDepositService;
-import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -62,12 +60,12 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
         }
         Double interest = depositRequestDto.getAmount() * 0.05 * depositDuration;
         FixedTermDeposit fixedTermDeposit = new FixedTermDeposit();
-        fixedTermDeposit.setAccountId(account);
+        fixedTermDeposit.setAccount(account);
         fixedTermDeposit.setAmount(depositRequestDto.getAmount());
         fixedTermDeposit.setCreationDate(new Date());
         fixedTermDeposit.setClosingDate(depositRequestDto.getClosingDate());
         fixedTermDeposit.setInterest(interest);
-        fixedTermDeposit.setUserId(user);
+        fixedTermDeposit.setUser(user);
         account.setBalance(account.getBalance()-depositRequestDto.getAmount());
         iAccountRepository.save(account);
         return  fixedTermDepositMapper.fixedTermDepositToFixedTermDepositDto(iFixedTermDepositRepository.save(fixedTermDeposit));

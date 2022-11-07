@@ -17,8 +17,4 @@ public interface IUserService {
 
     List<String> getBalance();
 
-    User findUserByEmail(String email);
-
-	  void createAccounts(User userSaved);
-
 }

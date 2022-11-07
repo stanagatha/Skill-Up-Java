@@ -39,11 +39,6 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public void saveAccount(Account account){
-        iAccountRepository.save(account);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Account findById(long accountId) {
         return iAccountRepository.findById(accountId).orElse(null);
@@ -81,11 +76,18 @@ public class AccountServiceImpl implements IAccountService {
         return null;
 
     }
+
     @Override
     @Transactional
     public AccountDto createAccount(Currency currency) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
+        return createAccount(user, currency);
+    }
+
+    @Override
+    @Transactional
+    public  AccountDto createAccount(User user, Currency currency){
         List<Account> accounts = iAccountRepository.findAllByUser(user);
         if (user == null) {
             throw new NotFoundException("User not found");
@@ -110,7 +112,5 @@ public class AccountServiceImpl implements IAccountService {
         }
         account.setTransactionLimit(limit);
         return accountMapper.accountToAccountDto(iAccountRepository.save(account));
-
     }
-
 }
