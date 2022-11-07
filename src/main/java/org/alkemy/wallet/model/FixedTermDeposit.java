@@ -20,11 +20,11 @@ public class FixedTermDeposit {
 
     @ManyToOne
     @JoinColumn(name = "USER_ID", nullable = false)
-    private User userId;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID", nullable = false)
-    private Account accountId;
+    private Account account;
 
     @Column(name = "INTEREST", nullable = false)
     private Double interest;

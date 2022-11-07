@@ -11,15 +11,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/fixedDeposit")
 public class FixedTermDepositController {
-    private final IFixedTermDepositService iFixedTermDepositService;
+
+    private final IFixedTermDepositService fixedTermDepositService;
+
     @Autowired
-    public FixedTermDepositController(IUserService iUserService , IFixedTermDepositService iFixedTermDepositService) {
-        this.iFixedTermDepositService = iFixedTermDepositService;
+    public FixedTermDepositController(IFixedTermDepositService fixedTermDepositService) {
+        this.fixedTermDepositService = fixedTermDepositService;
     }
-    @PostMapping("")
+
+    @PostMapping
     public ResponseEntity<FixedTermDepositDto> createFixedDeposit(@RequestBody FixedTermDepositRequestDto deposit){
-        FixedTermDepositDto fixedTermDepositDto = iFixedTermDepositService.createDeposit(deposit);
-        return ResponseEntity.ok().body(fixedTermDepositDto);
+        return ResponseEntity.ok().body(fixedTermDepositService.createDeposit(deposit));
     }
 
 }
