@@ -8,6 +8,6 @@ public interface ITransactionService {
 
     public TransactionDto save(TransactionDto transaction);
     public List<TransactionDto> getAllByUser(long userId);
-    public TransactionDto edit(long userId, long id, String desctiption);
+    public TransactionDto edit(long userId, long id, String description);
 
 }

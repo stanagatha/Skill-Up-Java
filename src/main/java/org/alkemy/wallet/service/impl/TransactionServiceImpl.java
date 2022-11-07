@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alkemy.wallet.dto.TransactionDto;
+import org.alkemy.wallet.exception.BadRequestException;
+import org.alkemy.wallet.mapper.TransactionMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Transaction;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.ITransactionRepository;
 import org.alkemy.wallet.repository.IUserRepository;
+import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -21,17 +22,17 @@ import java.util.Date;
 @Service
 public class TransactionServiceImpl implements ITransactionService {
 
-	private final ITransactionRepository transactionRepository;
-	private final TransactionMapper transactionMapper;
-	private final IAccountService accountService;
-	private final IUserRepository userRepository;
-	private final IAccountRepository accountRepository;
+	private ITransactionRepository transactionRepository;
+	private TransactionMapper transactionMapper;
+	private IAccountService accountService;
+	private IUserRepository userRepository;
+	private IAccountRepository accountRepository;
 
 	@Override
 	@Transactional
 	public TransactionDto save(TransactionDto transactionDto) {
 		if (transactionDto.getAmount() <= 0) {
-			throw new IllegalArgumentException("Amount must be greater than 0");
+			throw new BadRequestException("Amount must be greater than 0");
 		}
 		transactionDto.setTransactionDate(new Date(Calendar.getInstance().getTimeInMillis()));
 		Account account = accountService.findById(transactionDto.getAccountId());
@@ -49,7 +50,9 @@ public class TransactionServiceImpl implements ITransactionService {
 				transactions.addAll(transactionRepository.findAllByAccountId(acc));
 			});
 			return transactionMapper.toTransactionsDto(transactions);
-		}).orElseThrow(IllegalArgumentException::new);
+		}).orElseThrow(() -> {
+			return new BadRequestException("User not found, cannot list transactions");
+		});
 	}
 
 	@Override
@@ -58,15 +61,19 @@ public class TransactionServiceImpl implements ITransactionService {
 			List<Account> accounts = accountRepository.findAllByUser(user);
 			transactionRepository.findById(id).ifPresent(t -> {
 				if(!accounts.contains(t.getAccountId())){
-					throw new IllegalArgumentException("transaction does not belong to current user: " + user.getEmail());
+					throw new BadRequestException("transaction does not belong to current user: " + user.getEmail());
 				}
 				t.setDescript(description);
 				transactionRepository.save(t);
 			});
 			return transactionRepository.findById(id).map(t -> {
 				return transactionMapper.transactionToTransactionDto(t);
-			}).orElseThrow(IllegalArgumentException::new);
-		}).orElseThrow(IllegalArgumentException::new);
+			}).orElseThrow(() -> {
+				return new BadRequestException("Transaction not found");
+			});
+		}).orElseThrow(() -> {
+			return new BadRequestException("User not found");
+		});
 	}
 
 }

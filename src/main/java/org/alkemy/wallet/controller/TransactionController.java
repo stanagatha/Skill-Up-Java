@@ -1,5 +1,6 @@
 package org.alkemy.wallet.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alkemy.wallet.dto.TransactionDto;
@@ -22,37 +23,23 @@ public class TransactionController {
     }
 
     @GetMapping("/{user_id}")
-    public ResponseEntity<?> getAllByUser(@PathVariable(name = "user_id") long userId){
-        try {
-            return new ResponseEntity<>(transactionService.getAllByUser(userId), HttpStatus.OK);
-        } catch (IllegalArgumentException illegalArgumentException){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<List<TransactionDto>> getAllByUser(@PathVariable(name = "user_id") long userId){
+        return new ResponseEntity<>(transactionService.getAllByUser(userId), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> edit(@PathVariable(name = "id") long id, @RequestBody Map<String, String> requestBody){
-        try {
-            return new ResponseEntity<TransactionDto>(transactionService.edit(id, id, requestBody.get("description")), HttpStatus.OK);
-        } catch (IllegalArgumentException illegalArgumentException){
-            System.out.println("Error IAE edit method in transaction controller:\n" + illegalArgumentException.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            System.out.println("General error in edit method on transaction controller:\n" + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<TransactionDto> edit(@PathVariable(name = "id") long id, @RequestBody Map<String, String> requestBody){
+        return new ResponseEntity<TransactionDto>(transactionService.edit(id, id, requestBody.get("description")), HttpStatus.OK);
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto){
+    public ResponseEntity<TransactionDto> deposit(@RequestBody TransactionDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.DEPOSIT.name());
         return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
     }
 
     @PostMapping("/payment")
-    public ResponseEntity<?> payment(@RequestBody TransactionDto transactionDto){
+    public ResponseEntity<TransactionDto> payment(@RequestBody TransactionDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.PAYMENT.name());
         return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
     }
