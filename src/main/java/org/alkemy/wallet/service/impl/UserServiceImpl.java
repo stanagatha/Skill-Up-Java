@@ -48,6 +48,12 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public List<UserDto> getAll() {
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User loggedUser = userRepository.findByEmail(loggedUserEmail);
+
+        if(!loggedUser.getRole().getRoleName().name().equals("ADMIN"))
+            throw new ForbiddenException("You do not have permission to enter.");
+
         return userRepository.findAll().stream().
                 map(user -> userMapper.userToUserDTO(user)).
                 collect(Collectors.toList());
