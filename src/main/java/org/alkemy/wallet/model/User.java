@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+
 import java.util.Date;
 
 @Entity
@@ -23,6 +25,7 @@ public class User {
     @Column(name="LAST_NAME", nullable = false)
     private String lastName;
 
+    @Email
     @Column(name="EMAIL", nullable = false, unique = true)
     private String email;
 
