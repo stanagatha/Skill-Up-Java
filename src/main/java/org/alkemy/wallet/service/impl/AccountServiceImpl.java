@@ -46,6 +46,11 @@ public class AccountServiceImpl implements IAccountService {
 
     @Override
     public List<AccountDto> findAllByUser(Long userId) {
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User loggedUser = userRepository.findByEmail(loggedUserEmail);
+
+        if(!loggedUser.getRole().getRoleName().name().equals("ADMIN"))
+            throw new ForbiddenException("You do not have permission to enter.");
 
         if (userId == null || userId <= 0)
             throw new NotFoundException("User id is not valid.");
@@ -71,9 +76,11 @@ public class AccountServiceImpl implements IAccountService {
 
             return accountsDto;
 
-        }
+        } else {
 
-        return null;
+            throw new NotFoundException("User not found");
+
+        }
 
     }
 
