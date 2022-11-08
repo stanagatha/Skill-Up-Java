@@ -75,6 +75,10 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
     @Override
     public FixedTermDepositSimulateDto simulateDeposit(FixedTermDepositRequestDto depositRequestDto) {
         Long depositDuration = ( depositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
+        if (depositDuration < 30){
+            throw new BadRequestException("Time cannot be minor of 30");
+        }
+        
         Double interest = depositRequestDto.getAmount() * 0.05 * depositDuration;
         FixedTermDepositSimulateDto fixedTermDepositDto = new FixedTermDepositSimulateDto();
         fixedTermDepositDto.setAmount(depositRequestDto.getAmount());
