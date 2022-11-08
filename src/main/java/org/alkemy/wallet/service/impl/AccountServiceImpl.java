@@ -8,6 +8,7 @@ import org.alkemy.wallet.exception.NotFoundException;
 import org.alkemy.wallet.mapper.AccountMapper;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Currency;
+import org.alkemy.wallet.model.RoleName;
 import org.alkemy.wallet.model.User;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IUserRepository;
@@ -49,7 +50,7 @@ public class AccountServiceImpl implements IAccountService {
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         User loggedUser = userRepository.findByEmail(loggedUserEmail);
 
-        if(!loggedUser.getRole().getRoleName().name().equals("ADMIN"))
+        if(loggedUser.getRole().getRoleName() != RoleName.ADMIN)
             throw new ForbiddenException("You do not have permission to enter.");
 
         if (userId == null || userId <= 0)
