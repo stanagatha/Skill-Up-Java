@@ -4,7 +4,6 @@ import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +20,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @Secured("ADMIN")
     @GetMapping
     public ResponseEntity<List<UserDto>> getAll(){
         return ResponseEntity.ok().body(userService.getAll());
