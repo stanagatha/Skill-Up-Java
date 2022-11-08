@@ -39,12 +39,6 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Account findById(long accountId) {
-        return iAccountRepository.findById(accountId).orElse(null);
-    }
-
-    @Override
     public List<AccountDto> findAllByUser(Long userId) {
 
         if (userId == null || userId <= 0)
