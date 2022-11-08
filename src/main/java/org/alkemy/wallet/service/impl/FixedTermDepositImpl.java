@@ -2,6 +2,7 @@ package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.FixedTermDepositDto;
 import org.alkemy.wallet.dto.FixedTermDepositRequestDto;
+import org.alkemy.wallet.dto.FixedTermDepositSimulateDto;
 import org.alkemy.wallet.exception.BadRequestException;
 import org.alkemy.wallet.exception.NotFoundException;
 import org.alkemy.wallet.mapper.FixedTermDepositMapper;
@@ -50,8 +51,7 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
             throw new NotFoundException("Not exist");
         }
 
-        long depositDuration = ( depositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
-        System.out.println(depositDuration);
+        Long depositDuration = ( depositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
         if (depositDuration < 30){
             throw new BadRequestException("Time cannot be minor of 30");
         }
@@ -70,6 +70,23 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
         iAccountRepository.save(account);
         return  fixedTermDepositMapper.fixedTermDepositToFixedTermDepositDto(iFixedTermDepositRepository.save(fixedTermDeposit));
 
+    }
+
+    @Override
+    public FixedTermDepositSimulateDto simulateDeposit(FixedTermDepositRequestDto depositRequestDto) {
+        Long depositDuration = ( depositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
+        if (depositDuration < 30){
+            throw new BadRequestException("Time cannot be minor of 30");
+        }
+        
+        Double interest = depositRequestDto.getAmount() * 0.05 * depositDuration;
+        FixedTermDepositSimulateDto fixedTermDepositDto = new FixedTermDepositSimulateDto();
+        fixedTermDepositDto.setAmount(depositRequestDto.getAmount());
+        fixedTermDepositDto.setClosingDate(depositRequestDto.getClosingDate());
+        fixedTermDepositDto.setCreationDate(new Date());
+        fixedTermDepositDto.setInterest(interest);
+        fixedTermDepositDto.setTotalAmount(depositRequestDto.getAmount() + interest);
+        return  fixedTermDepositDto;
 
     }
 
