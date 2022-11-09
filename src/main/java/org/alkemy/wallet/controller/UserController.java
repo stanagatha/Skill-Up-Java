@@ -3,6 +3,7 @@ package org.alkemy.wallet.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.alkemy.wallet.dto.UserDto;
+import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,12 @@ public class UserController {
                description = "As an ADMIN, can delete any user. As a USER, can only delete themself.")
     public ResponseEntity<String> deleteById(@PathVariable("userId") Long id) {
         return ResponseEntity.ok().body(userService.deleteById(id));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserDto> UpdateUser(@PathVariable("id") Long id,
+                                              @RequestBody UserUpdateDto userUpdateDto){
+        return ResponseEntity.ok().body(userService.updateUser(id, userUpdateDto));
     }
 
 }
