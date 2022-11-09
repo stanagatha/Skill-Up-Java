@@ -8,10 +8,12 @@ import org.alkemy.wallet.repository.ITransactionRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.security.JwtTokenUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -88,5 +93,17 @@ public class TransactionsDepositTest {
         transactionRequestDto.setAccountId(1L);
 
         jsonMapper = new ObjectMapper();
+    }
+
+    @Test
+    void post_TokenProvided_CreatedResponse() throws Exception {
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.amount").value(100D))
+                .andExpect(jsonPath("$.accountId").value(1L))
+                .andExpect(jsonPath("$.description").value("String"))
+                .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.DEPOSIT.name()));
     }
 }
