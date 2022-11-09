@@ -41,12 +41,6 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Account findById(long accountId) {
-        return accountRepository.findById(accountId).orElse(null);
-    }
-
-    @Override
     public List<AccountDto> findAllByUser(Long userId) {
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         User loggedUser = userRepository.findByEmail(loggedUserEmail);
@@ -139,7 +133,8 @@ public class AccountServiceImpl implements IAccountService {
                 throw new ForbiddenException("You are not allowed to modify this account");
 
             account.get().setTransactionLimit(transactionLimit);
-            return accountMapper.accountToAccountDto(account.get());
+            account.get().setUpdateDate(new Date());
+            return accountMapper.accountToAccountDto(accountRepository.save(account.get()));
         }
 
 }
