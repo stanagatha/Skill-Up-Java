@@ -3,6 +3,7 @@ package org.alkemy.wallet.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.alkemy.wallet.dto.UserDto;
+import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,13 @@ public class UserController {
         return ResponseEntity.ok().body(userService.deleteById(id));
     }
 
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserDto> UpdateUser(@PathVariable("id") Long id,
+                                              @RequestBody UserUpdateDto userUpdateDto){
+        return ResponseEntity.ok().body(userService.updateUser(id, userUpdateDto));
+    }
+        
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getById(@PathVariable Long id){
         return ResponseEntity.ok().body(userService.getById(id));

@@ -2,14 +2,13 @@ package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.dto.UserDto;
+import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.exception.BadRequestException;
 import org.alkemy.wallet.exception.ForbiddenException;
 import org.alkemy.wallet.exception.NotFoundException;
 import org.alkemy.wallet.mapper.UserMapper;
 
-import org.alkemy.wallet.model.Role;
-import org.alkemy.wallet.model.RoleName;
-import org.alkemy.wallet.model.User;
+import org.alkemy.wallet.model.*;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -105,6 +105,29 @@ public class UserServiceImpl implements IUserService {
         }
 
         return balances;
+    }
+
+    @Override
+    public UserDto updateUser(Long id, UserUpdateDto userUpdateDto) {
+        if(userUpdateDto.firstName == null)
+            throw new BadRequestException("firstName is mandatory");
+        if(userUpdateDto.lastName == null)
+            throw new BadRequestException("lastName is mandatory");
+
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty())
+            throw new NotFoundException("No user with id: " + id);
+
+        if (loggedUserId != id)
+            throw new ForbiddenException("You are not allowed to view this user");
+
+        user.get().setFirstName(userUpdateDto.firstName);
+        user.get().setLastName(userUpdateDto.lastName);
+        user.get().setUpdateDate(new Date());
+        return userMapper.userToUserDTO(userRepository.save(user.get()));
     }
 
     @Override
