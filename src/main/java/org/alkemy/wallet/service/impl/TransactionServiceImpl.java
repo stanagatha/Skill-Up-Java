@@ -56,9 +56,6 @@ public class TransactionServiceImpl implements ITransactionService {
         if (!validTransactionTypes.contains(transactionDto.getTypeTransaction()))
             throw new BadRequestException("Not a valid transaction type");
 
-        if (transactionDto.getDescription() == null)
-            throw new BadRequestException("Description is mandatory");
-
         if (transactionDto.getAccountId() == null)
             throw new BadRequestException("Destination account id is mandatory");
 
