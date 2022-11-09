@@ -122,20 +122,20 @@ public class AccountServiceImpl implements IAccountService {
         if (transactionLimit == null)
             throw new BadRequestException("Transaction is mandatory");
 
-            String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-            long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
 
-            Optional<Account> account = accountRepository.findById(id);
-            if (account.isEmpty())
-                throw new NotFoundException("Account not found");
+        Optional<Account> account = accountRepository.findById(id);
+        if (account.isEmpty())
+            throw new NotFoundException("Account not found");
 
-            if (account.get().getUser().getId() != loggedUserId)
-                throw new ForbiddenException("You are not allowed to modify this account");
+        if (account.get().getUser().getId() != loggedUserId)
+            throw new ForbiddenException("You are not allowed to modify this account");
 
-            account.get().setTransactionLimit(transactionLimit);
-            account.get().setUpdateDate(new Date());
-            return accountMapper.accountToAccountDto(accountRepository.save(account.get()));
-        }
+        account.get().setTransactionLimit(transactionLimit);
+        account.get().setUpdateDate(new Date());
+        return accountMapper.accountToAccountDto(accountRepository.save(account.get()));
+    }
 
 }
 

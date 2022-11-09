@@ -43,7 +43,8 @@ public class SwaggerConfig {
                 new Info()
                     .title(apiTitle)
                     .version(apiVersion)
-                    .description("Alkemy Java Technical Challenge")
+                    .description("Alkemy Java Technical Challenge \uD83D\uDE80<br><br>" +
+                            "<a href=\"https://github.com/stanagatha/Skill-Up-Java-Wallet\">GitHub repository</a>")
             );
     }
 

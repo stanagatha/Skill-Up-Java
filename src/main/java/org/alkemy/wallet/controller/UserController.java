@@ -1,5 +1,7 @@
 package org.alkemy.wallet.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import java.util.List;
 
 
 @RestController
+@Tag(name = "Users", description = "UserController")
 @RequestMapping("/users")
 public class UserController {
 
@@ -21,19 +24,24 @@ public class UserController {
         this.userService = userService;
     }
 
-    @Secured({"ROLE_ADMIN"})
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAll(){
+    @Operation(summary = "Get all users",
+               description = "Only accessible as an ADMIN.")
+    @Secured({"ROLE_ADMIN"})
+    public ResponseEntity<List<UserDto>> getAll() {
         return ResponseEntity.ok().body(userService.getAll());
     }
 
     @GetMapping("/current")
-    public ResponseEntity<UserDto> getCurrent(){
+    @Operation(summary = "Get information from currently authenticated user")
+    public ResponseEntity<UserDto> getCurrent() {
         return ResponseEntity.ok().body(userService.getCurrent());
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteById(@PathVariable("userId") Long id){
+    @Operation(summary = "Delete a user by providing an user ID",
+               description = "As an ADMIN, can delete any user. As a USER, can only delete themself.")
+    public ResponseEntity<String> deleteById(@PathVariable("userId") Long id) {
         return ResponseEntity.ok().body(userService.deleteById(id));
     }
 
