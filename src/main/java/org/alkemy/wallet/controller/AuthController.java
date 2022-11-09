@@ -1,6 +1,8 @@
 package org.alkemy.wallet.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.alkemy.wallet.dto.ResponseJwtDto;
 import org.alkemy.wallet.dto.UserLoginDto;
 import org.alkemy.wallet.dto.UserRegisterRequestDto;
@@ -21,33 +23,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-	@Autowired
-	private IAuthService authService;
-	
-	@PostMapping("/login")
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody UserLoginDto authenticationRequest) throws Exception {
+    @Autowired
+    private IAuthService authService;
 
-		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+    @PostMapping("/login")
+    @Tag(name = "Authentication", description = "AuthController")
+    @Operation(summary = "Authenticates a user to the application")
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody UserLoginDto authenticationRequest) throws Exception {
 
-		return new ResponseEntity<ResponseJwtDto>(new ResponseJwtDto(
-													authService.createToken(authenticationRequest.getEmail())
-													), null, HttpStatus.OK
-												 );
-	}
+        authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
 
-	@ResponseStatus(code = HttpStatus.CREATED)
-	@PostMapping(value = "/register")
-	public ResponseEntity<UserRegisterResponseDto> createUser(@RequestBody UserRegisterRequestDto user) throws Exception {		
-		return new ResponseEntity<UserRegisterResponseDto>(authService.createUserWithAccounts(user),null,HttpStatus.CREATED);		
-	}
-	
-	private void authenticate(String username, String password) throws Exception {
-		try {
-			authService.authenticate(username, password);
-		} catch (DisabledException e) {
-			throw new Exception("USER_DISABLED", e);
-		} catch (BadCredentialsException e) {
-			throw new Exception("INVALID_CREDENTIALS", e);
-		}
-	}
+        return new ResponseEntity<ResponseJwtDto>(new ResponseJwtDto(
+                authService.createToken(authenticationRequest.getEmail())
+        ), null, HttpStatus.OK
+        );
+    }
+
+    @PostMapping(value = "/register")
+    @Tag(name = "Authentication", description = "AuthController")
+    @Operation(summary = "Registers a user to the application")
+    @ResponseStatus(code = HttpStatus.CREATED)
+    public ResponseEntity<UserRegisterResponseDto> createUser(@RequestBody UserRegisterRequestDto user) throws Exception {
+        return new ResponseEntity<UserRegisterResponseDto>(authService.createUserWithAccounts(user),null,HttpStatus.CREATED);
+    }
+
+    private void authenticate(String username, String password) throws Exception {
+        try {
+            authService.authenticate(username, password);
+        } catch (DisabledException e) {
+            throw new Exception("USER_DISABLED", e);
+        } catch (BadCredentialsException e) {
+            throw new Exception("INVALID_CREDENTIALS", e);
+        }
+    }
 }
