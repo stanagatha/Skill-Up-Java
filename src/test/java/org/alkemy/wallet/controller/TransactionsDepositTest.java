@@ -125,4 +125,14 @@ public class TransactionsDepositTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Destination account id is mandatory"));
     }
+
+    @Test
+    void post_DestinationAccountNotFound_NotFoundResponse() throws Exception {
+        transactionRequestDto.setAccountId(10L);
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Account not found"));
+    }
 }
