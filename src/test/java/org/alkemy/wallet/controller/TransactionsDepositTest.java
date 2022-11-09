@@ -24,8 +24,7 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -105,5 +104,15 @@ public class TransactionsDepositTest {
                 .andExpect(jsonPath("$.accountId").value(1L))
                 .andExpect(jsonPath("$.description").value("String"))
                 .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.DEPOSIT.name()));
+    }
+
+    @Test
+    void post_InvalidAmountProvided_BadRequestResponse() throws Exception {
+        transactionRequestDto.setAmount(-100D);
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Amount must be greater than 0"));
     }
 }
