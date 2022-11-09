@@ -163,4 +163,12 @@ public class TransactionsSendArsTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Not enough founds"));
     }
+
+    @Test
+    void post_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken + "fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isUnauthorized());
+    }
 }
