@@ -4,7 +4,6 @@ import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.model.Account;
 import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.model.User;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,4 +16,6 @@ public interface IAccountService {
     AccountDto createAccount(Currency currency);
 
     AccountDto createAccount(User user, Currency currency);
+
+    AccountDto edit(Long id, Double transactionLimit);
 }
