@@ -24,8 +24,7 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -103,5 +102,15 @@ public class TransactionsSendArsTest {
                 .andExpect(jsonPath("$.description").value("SendArs"))
                 .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.PAYMENT
                         .name()));
+    }
+
+    @Test
+    void postSendArs_InvalidAmountProvided_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setAmount(-100D);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Amount must be greater than 0"));
     }
 }
