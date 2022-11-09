@@ -11,6 +11,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/accounts")
@@ -42,4 +43,9 @@ public class AccountController {
         return ResponseEntity.ok().body(userService.getBalance());
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<AccountDto> edit(@PathVariable(name = "id") Long id,
+                                           @RequestBody Map<String, Double> requestBody){
+        return ResponseEntity.ok().body(accountService.edit(id, requestBody.get("transactionLimit")));
+    }
 }

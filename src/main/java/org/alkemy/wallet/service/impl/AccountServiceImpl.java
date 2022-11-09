@@ -2,6 +2,7 @@ package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.AccountDto;
 
+import org.alkemy.wallet.exception.BadRequestException;
 import org.alkemy.wallet.exception.ForbiddenException;
 import org.alkemy.wallet.exception.NotFoundException;
 
@@ -26,17 +27,23 @@ import java.util.Optional;
 @Service
 public class AccountServiceImpl implements IAccountService {
 
-    private final IAccountRepository iAccountRepository;
+    private final IAccountRepository accountRepository;
 
     private final IUserRepository userRepository;
 
     private final AccountMapper accountMapper;
 
     @Autowired
-    public AccountServiceImpl(IAccountRepository iAccountRepository, IUserRepository userRepository, AccountMapper accountMapper) {
-        this.iAccountRepository = iAccountRepository;
+    public AccountServiceImpl(IAccountRepository accountRepository, IUserRepository userRepository, AccountMapper accountMapper) {
+        this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMapper = accountMapper;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Account findById(long accountId) {
+        return accountRepository.findById(accountId).orElse(null);
     }
 
     @Override
@@ -54,7 +61,7 @@ public class AccountServiceImpl implements IAccountService {
 
         if(userOptional.isPresent()){
 
-            List<Account> accounts = iAccountRepository.findAllByUser(userOptional.get());
+            List<Account> accounts = accountRepository.findAllByUser(userOptional.get());
 
             List<AccountDto> accountsDto = new ArrayList<>();
 
@@ -90,7 +97,7 @@ public class AccountServiceImpl implements IAccountService {
     @Override
     @Transactional
     public  AccountDto createAccount(User user, Currency currency){
-        List<Account> accounts = iAccountRepository.findAllByUser(user);
+        List<Account> accounts = accountRepository.findAllByUser(user);
         if (user == null) {
             throw new NotFoundException("User not found");
         }
@@ -113,6 +120,27 @@ public class AccountServiceImpl implements IAccountService {
             limit = 1000.0;
         }
         account.setTransactionLimit(limit);
-        return accountMapper.accountToAccountDto(iAccountRepository.save(account));
+        return accountMapper.accountToAccountDto(accountRepository.save(account));
     }
+
+    @Override
+    public AccountDto edit(Long id, Double transactionLimit) {
+        if (transactionLimit == null)
+            throw new BadRequestException("Transaction is mandatory");
+
+            String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+
+            Optional<Account> account = accountRepository.findById(id);
+            if (account.isEmpty())
+                throw new NotFoundException("Account not found");
+
+            if (account.get().getUser().getId() != loggedUserId)
+                throw new ForbiddenException("You are not allowed to modify this account");
+
+            account.get().setTransactionLimit(transactionLimit);
+            return accountMapper.accountToAccountDto(account.get());
+        }
+
 }
+
