@@ -143,4 +143,14 @@ public class TransactionsSendArsTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Cannot be different types of currency"));
     }
+
+    @Test
+    void postSendArs_AmountAboveTheLimit_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setAmount(12000D);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Amount must be less than the limit"));
+    }
 }
