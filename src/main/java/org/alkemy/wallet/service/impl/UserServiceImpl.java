@@ -130,4 +130,19 @@ public class UserServiceImpl implements IUserService {
         return userMapper.userToUserDTO(userRepository.save(user.get()));
     }
 
+    @Override
+    public UserDto getById(Long id) {
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty())
+            throw new NotFoundException("No user with id: " + id);
+
+        if (loggedUserId != id)
+            throw new ForbiddenException("You are not allowed to view this user");
+
+        return userMapper.userToUserDTO(user.get());
+    }
+
 }

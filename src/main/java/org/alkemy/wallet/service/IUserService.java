@@ -20,4 +20,6 @@ public interface IUserService {
 
     UserDto updateUser(Long id, UserUpdateDto userUpdateDto);
 
+    UserDto getById(Long id);
+
 }
