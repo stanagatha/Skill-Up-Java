@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Tag(name = "Authentication", description = "AuthController")
 @RequestMapping("/auth")
 public class AuthController {
 
@@ -27,24 +28,21 @@ public class AuthController {
     private IAuthService authService;
 
     @PostMapping("/login")
-    @Tag(name = "Authentication", description = "AuthController")
-    @Operation(summary = "Authenticates a user to the application")
+    @Operation(summary = "Authenticate as an already existing user",
+               description = "Required information: email, password")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody UserLoginDto authenticationRequest) throws Exception {
-
         authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
-
-        return new ResponseEntity<ResponseJwtDto>(new ResponseJwtDto(
-                authService.createToken(authenticationRequest.getEmail())
-        ), null, HttpStatus.OK
-        );
+        return new ResponseEntity<>(new ResponseJwtDto(
+                authService.createToken(authenticationRequest.getEmail())), null, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/register")
-    @Tag(name = "Authentication", description = "AuthController")
-    @Operation(summary = "Registers a user to the application")
+    @PostMapping("/register")
+    @Operation(summary = "Register a new user",
+               description = "Required information: first name, last name, email, password.")
     @ResponseStatus(code = HttpStatus.CREATED)
     public ResponseEntity<UserRegisterResponseDto> createUser(@RequestBody UserRegisterRequestDto user) throws Exception {
-        return new ResponseEntity<UserRegisterResponseDto>(authService.createUserWithAccounts(user),null,HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                authService.createUserWithAccounts(user),null, HttpStatus.CREATED);
     }
 
     private void authenticate(String username, String password) throws Exception {
@@ -56,4 +54,5 @@ public class AuthController {
             throw new Exception("INVALID_CREDENTIALS", e);
         }
     }
+
 }
