@@ -2,7 +2,6 @@ package org.alkemy.wallet.controller;
 
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.model.Currency;
-import org.alkemy.wallet.model.RoleName;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +42,14 @@ public class AccountController {
         return ResponseEntity.ok().body(userService.getBalance());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<AccountDto> getById(@PathVariable(name = "id") Long id){
+        return ResponseEntity.ok().body(accountService.getById(id));
+    }
+
     @PatchMapping("/{id}")
-    public ResponseEntity<AccountDto> edit(@PathVariable(name = "id") Long id,
+    public ResponseEntity<AccountDto> editById(@PathVariable(name = "id") Long id,
                                            @RequestBody Map<String, Double> requestBody){
-        return ResponseEntity.ok().body(accountService.edit(id, requestBody.get("transactionLimit")));
+        return ResponseEntity.ok().body(accountService.editById(id, requestBody.get("transactionLimit")));
     }
 }
