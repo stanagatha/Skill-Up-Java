@@ -145,4 +145,12 @@ public class TransactionsDepositTest {
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("Not allow to register transactions in other accounts than yours"));
     }
+
+    @Test
+    void post_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken+"fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                .andExpect(status().isUnauthorized());
+    }
 }
