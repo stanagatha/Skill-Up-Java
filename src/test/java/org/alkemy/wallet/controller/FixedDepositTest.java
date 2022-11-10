@@ -49,6 +49,7 @@ public class FixedDepositTest {
   @MockBean
   private IUserRepository userRepository;
   private User user;
+  private User adminUser;
   private FixedTermDepositRequestDto fixedTermDepositRequestDto = new FixedTermDepositRequestDto();
   private FixedTermDepositDto fixedTermDepositDto = new FixedTermDepositDto();
 
@@ -58,7 +59,9 @@ public class FixedDepositTest {
     Role adminRole = new Role(2L, RoleName.ADMIN, "ADMIN Role", new Date(), new Date());
 
     user = new User("user", "test", "userEmail@email.com", "1234", userRole);
+    adminUser = new User("admin", "test", "adminUserEmail@email.com", "1234", userRole);
     when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
+    when(userRepository.findByEmail(adminUser.getEmail())).thenReturn(adminUser);
 
     fixedTermDepositRequestDto.setAmount(1000.0);
     fixedTermDepositRequestDto.setClosingDate(new Date());
@@ -101,4 +104,18 @@ public class FixedDepositTest {
     .andExpect(status().isUnauthorized());
   }
 
+  @Test
+  public void create_adminToken_200Status() throws Exception{
+    String userToken = jwtTokenUtil.generateToken(new org.springframework.security.core.userdetails.User("adminUserEmail@email.com", "1234", new ArrayList<>()));
+    String jsonResponse = jsonMapper.writeValueAsString(fixedTermDepositDto);
+    RequestBuilder request = MockMvcRequestBuilders
+      .post("/fixedDeposit")
+      .content(jsonMapper.writeValueAsString(fixedTermDepositRequestDto))
+      .contentType(MediaType.APPLICATION_JSON)
+      .header("Authorization", "Bearer " + userToken);
+
+    mockMvc.perform(request)
+    .andExpect(status().isOk())
+    .andExpect(content().json(jsonResponse));
+  }
 }
