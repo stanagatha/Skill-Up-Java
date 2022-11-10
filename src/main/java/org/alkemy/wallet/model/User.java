@@ -1,5 +1,6 @@
 package org.alkemy.wallet.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.Date;
 @Table(name = "USERS")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id

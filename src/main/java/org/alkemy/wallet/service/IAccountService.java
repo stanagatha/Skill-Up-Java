@@ -17,5 +17,7 @@ public interface IAccountService {
 
     AccountDto createAccount(User user, Currency currency);
 
-    AccountDto edit(Long id, Double transactionLimit);
+    AccountDto editById(Long id, Double transactionLimit);
+
+    AccountDto getById(Long id);
 }

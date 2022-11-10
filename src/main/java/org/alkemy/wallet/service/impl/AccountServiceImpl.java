@@ -136,9 +136,9 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public AccountDto edit(Long id, Double transactionLimit) {
-        if (transactionLimit == null)
-            throw new BadRequestException("Transaction is mandatory");
+    public AccountDto editById(Long id, Double transactionLimit) {
+            if (transactionLimit == null)
+                throw new BadRequestException("Transaction limit is mandatory");
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
@@ -153,6 +153,21 @@ public class AccountServiceImpl implements IAccountService {
         account.get().setTransactionLimit(transactionLimit);
         account.get().setUpdateDate(new Date());
         return accountMapper.accountToAccountDto(accountRepository.save(account.get()));
+    }
+
+    @Override
+    public AccountDto getById(Long id) {
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+
+        Optional<Account> account = accountRepository.findById(id);
+        if (account.isEmpty())
+            throw new NotFoundException("Account not found");
+
+        if (account.get().getUser().getId() != loggedUserId)
+            throw new ForbiddenException("You are not allowed to view this account");
+
+        return accountMapper.accountToAccountDto(account.get());
     }
 
 }

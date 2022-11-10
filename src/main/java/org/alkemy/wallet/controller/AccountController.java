@@ -49,9 +49,14 @@ public class AccountController {
         return ResponseEntity.ok().body(userService.getBalance());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<AccountDto> getById(@PathVariable(name = "id") Long id){
+        return ResponseEntity.ok().body(accountService.getById(id));
+    }
+
     @PatchMapping("/{id}")
-    public ResponseEntity<AccountDto> edit(@PathVariable(name = "id") Long id,
+    public ResponseEntity<AccountDto> editById(@PathVariable(name = "id") Long id,
                                            @RequestBody Map<String, Double> requestBody){
-        return ResponseEntity.ok().body(accountService.edit(id, requestBody.get("transactionLimit")));
+        return ResponseEntity.ok().body(accountService.editById(id, requestBody.get("transactionLimit")));
     }
 }
