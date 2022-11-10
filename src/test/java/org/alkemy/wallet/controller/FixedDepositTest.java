@@ -79,7 +79,7 @@ public class FixedDepositTest {
 
   @Test
   //@WithMockUser(username = "userEmail@email.com", password = "1234", roles = {"USER"})
-  public void fixedDepositShouldCreateDto() throws Exception{
+  public void create_userToken_200Status() throws Exception{
     String userToken = jwtTokenUtil.generateToken(new org.springframework.security.core.userdetails.User("userEmail@email.com", "1234", new ArrayList<>()));
     String jsonResponse = jsonMapper.writeValueAsString(fixedTermDepositDto);
     RequestBuilder request = MockMvcRequestBuilders
