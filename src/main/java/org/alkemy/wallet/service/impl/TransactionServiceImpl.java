@@ -17,6 +17,9 @@ import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,13 +110,15 @@ public class TransactionServiceImpl implements ITransactionService {
     }
 
     @Override
-    public List<TransactionDto> getAllByUser(long userId) {
+    public Page<TransactionDto> getAllByUser(long userId, Integer pageNumber) {
+        if(pageNumber == null || pageNumber < 0)
+            throw new BadRequestException("The page number is invalid.");
+
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         User loggedUser = userRepository.findByEmail(loggedUserEmail);
         Long loggedUserId = loggedUser.getId();
-        Role loggedUserRole = loggedUser.getRole();
 
-        if (loggedUserId != userId && loggedUserRole.getRoleName() != RoleName.ADMIN)
+        if (loggedUserId != userId)
             throw new ForbiddenException("Unable to see other user's transactions");
 
         Optional<User> user = userRepository.findById(userId);
@@ -126,9 +131,13 @@ public class TransactionServiceImpl implements ITransactionService {
             transactions.addAll(transactionRepository.findAllByAccount(acc));
         });
 
-        return transactions.stream().
-                map(transaction -> transactionMapper.transactionToTransactionDto(transaction)).
-                collect(Collectors.toList());
+        Page<Transaction> transactionPage = new PageImpl<>(transactions, PageRequest.of(pageNumber,10), transactions.size());
+
+        if((transactionPage.getTotalPages() - 1) < pageNumber)
+            throw new BadRequestException("The page number is greater than the total number of pages.");
+
+        return transactionPage.map(transaction -> transactionMapper.transactionToTransactionDto(transaction));
+
     }
     
     @Override
