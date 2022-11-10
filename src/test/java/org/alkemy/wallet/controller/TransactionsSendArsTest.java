@@ -113,4 +113,14 @@ public class TransactionsSendArsTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Amount must be greater than 0"));
     }
+
+    @Test
+    void post_DestinationAccountNull_NotFoundResponse() throws Exception {
+        transactionSendMoneyDto.setDestinationAccountId(null);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Not found"));
+    }
 }
