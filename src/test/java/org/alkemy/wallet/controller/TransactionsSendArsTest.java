@@ -123,4 +123,14 @@ public class TransactionsSendArsTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Not found"));
     }
+
+    @Test
+    void post_DestinationAccountEqualsCurrentAccount_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setDestinationAccountId(1L);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Cannot be the same account"));
+    }
 }
