@@ -1,6 +1,5 @@
 package org.alkemy.wallet.controller;
 
-import java.util.List;
 import java.util.Map;
 
 import org.alkemy.wallet.dto.TransactionDto;
@@ -8,11 +7,12 @@ import org.alkemy.wallet.dto.TransactionRequestDto;
 import org.alkemy.wallet.dto.TransactionSendMoneyDto;
 import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.model.TypeTransaction;
-import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,18 +21,15 @@ public class TransactionController {
 
     private final ITransactionService transactionService;
 
-    private final IUserRepository userRepository;
-
     @Autowired
-    public TransactionController(ITransactionService transactionService,
-                                IUserRepository userRepository) {
+    public TransactionController(ITransactionService transactionService) {
         this.transactionService = transactionService;
-        this.userRepository = userRepository;
     }
 
+    @Secured({"ROLE_ADMIN"})
     @GetMapping("user/{userId}")
-    public ResponseEntity<List<TransactionDto>> getAllByUser(@PathVariable(name = "userId") long userId){
-        return new ResponseEntity<>(transactionService.getAllByUser(userId), HttpStatus.OK);
+    public ResponseEntity<Page<TransactionDto>> getAllByUser(@PathVariable(name = "userId") long userId, @RequestParam("page") Integer pageNumber){
+        return ResponseEntity.ok().body(transactionService.getAllByUser(userId, pageNumber));
     }
 
     @GetMapping("/{id}")
