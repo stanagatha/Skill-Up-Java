@@ -122,4 +122,13 @@ public class UsersUpdateTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("No user with id: " + idFail));
     }
+
+    @Test
+    void patch_UserWithDiffId_ForbiddenResponse() throws Exception {
+        mockMvc.perform(patch("/users/" + admin.getId())
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("You are not allowed to view this user"));
+    }
 }
