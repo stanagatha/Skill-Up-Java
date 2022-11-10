@@ -135,4 +135,14 @@ public class TransactionsDepositTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Account not found"));
     }
+
+    @Test
+    void post_InvalidAccount_ForbiddenResponse() throws Exception {
+        account.setUser(admin);
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Not allow to register transactions in other accounts than yours"));
+    }
 }
