@@ -86,9 +86,13 @@ public class UsersUpdateTest {
     }
 
     @Test
-    void patch_NoTokenProvided_UnauthorizedResponse() throws Exception {
+    void patch_IncorrectTokenProvided_UnauthorizedResponse() throws Exception {
         mockMvc.perform(patch("/users/" + user.getId()).
                         contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isUnauthorized());
+        mockMvc.perform(patch("/users/" + user.getId())
+                        .header("Authorization", "Bearer " + userToken + "fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isUnauthorized());
     }
 }
