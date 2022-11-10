@@ -15,6 +15,8 @@ import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,22 @@ public class AccountServiceImpl implements IAccountService {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMapper = accountMapper;
+    }
+
+    @Override
+    public Page<AccountDto> getAll(Integer pageNumber){
+
+        if(pageNumber == null || pageNumber < 0)
+            throw new BadRequestException("The page number is invalid.");
+
+        Page<Account> accounts = accountRepository.findAll(PageRequest.of(pageNumber,10));
+
+        if((accounts.getTotalPages() - 1) < pageNumber){
+            throw new BadRequestException("The page number is greater than the total number of pages.");
+        }
+
+        return accounts.map(account -> accountMapper.accountToAccountDto(account));
+
     }
 
     @Override
