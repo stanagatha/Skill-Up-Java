@@ -2,10 +2,10 @@ package org.alkemy.wallet.controller;
 
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.model.Currency;
-import org.alkemy.wallet.model.RoleName;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +25,12 @@ public class AccountController {
     public AccountController(IAccountService accountService, IUserService userService) {
         this.accountService = accountService;
         this.userService = userService;
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @GetMapping
+    public ResponseEntity<Page<AccountDto>> getAll(@RequestParam("page") Integer pageNumber) {
+        return ResponseEntity.ok().body(accountService.getAll(pageNumber));
     }
 
     @Secured({"ROLE_ADMIN"})
