@@ -84,4 +84,11 @@ public class UsersUpdateTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(jsonMapper.writeValueAsString(responseUserDto)));
     }
+
+    @Test
+    void patch_NoTokenProvided_UnauthorizedResponse() throws Exception {
+        mockMvc.perform(patch("/users/" + user.getId()).
+                        contentType(MediaType.APPLICATION_JSON)).
+                andExpect(status().isUnauthorized());
+    }
 }
