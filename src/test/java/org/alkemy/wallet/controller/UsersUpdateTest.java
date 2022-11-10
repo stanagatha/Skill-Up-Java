@@ -1,6 +1,7 @@
 package org.alkemy.wallet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.mapper.UserMapper;
 import org.alkemy.wallet.model.Role;
@@ -9,10 +10,12 @@ import org.alkemy.wallet.model.User;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.security.JwtTokenUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,6 +25,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -64,5 +70,18 @@ public class UsersUpdateTest {
         userUpdateDto.setLastName("New last name");
 
         jsonMapper = new ObjectMapper();
+    }
+
+    @Test
+    void patch_TokenProvided_OkResponse() throws Exception {
+        user.setFirstName(userUpdateDto.getFirstName());
+        user.setLastName(userUpdateDto.getLastName());
+        UserDto responseUserDto = userMapper.userToUserDTO(user);
+        when(userRepositoryMock.save(user)).thenReturn(user);
+        mockMvc.perform(patch("/users/" + user.getId())
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(jsonMapper.writeValueAsString(responseUserDto)));
     }
 }
