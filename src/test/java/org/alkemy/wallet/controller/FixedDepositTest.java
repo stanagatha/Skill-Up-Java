@@ -59,7 +59,7 @@ public class FixedDepositTest {
     Role adminRole = new Role(2L, RoleName.ADMIN, "ADMIN Role", new Date(), new Date());
 
     user = new User("user", "test", "userEmail@email.com", "1234", userRole);
-    adminUser = new User("admin", "test", "adminUserEmail@email.com", "1234", userRole);
+    adminUser = new User("admin", "test", "adminUserEmail@email.com", "1234", adminRole);
     when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
     when(userRepository.findByEmail(adminUser.getEmail())).thenReturn(adminUser);
 
