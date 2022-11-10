@@ -112,4 +112,14 @@ public class UsersUpdateTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("lastName is mandatory"));
     }
+
+    @Test
+    void patch_NoUserFound_NotFoundResponse() throws Exception {
+        long idFail = 10L;
+        mockMvc.perform(patch("/users/" + idFail)
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No user with id: " + idFail));
+    }
 }
