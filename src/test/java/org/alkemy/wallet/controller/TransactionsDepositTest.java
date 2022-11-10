@@ -115,4 +115,14 @@ public class TransactionsDepositTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Amount must be greater than 0"));
     }
+
+    @Test
+    void post_DestinationAccountNull_BadRequestResponse() throws Exception {
+        transactionRequestDto.setAccountId(null);
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Destination account id is mandatory"));
+    }
 }
