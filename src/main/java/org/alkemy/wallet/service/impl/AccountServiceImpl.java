@@ -60,42 +60,23 @@ public class AccountServiceImpl implements IAccountService {
 
     @Override
     public List<AccountDto> findAllByUser(Long userId) {
-        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        User loggedUser = userRepository.findByEmail(loggedUserEmail);
-
-        if(loggedUser.getRole().getRoleName() != RoleName.ADMIN)
-            throw new ForbiddenException("You do not have permission to enter.");
-
         if (userId == null || userId <= 0)
             throw new NotFoundException("User id is not valid.");
 
         Optional<User> userOptional = userRepository.findById(userId);
-
         if(userOptional.isPresent()){
-
             List<Account> accounts = accountRepository.findAllByUser(userOptional.get());
-
             List<AccountDto> accountsDto = new ArrayList<>();
-
             if(!accounts.isEmpty()){
-
                 for (Account account: accounts) {
-
                     AccountDto accountDto = accountMapper.accountToAccountDto(account);
-
                     accountsDto.add(accountDto);
-
                 }
             }
-
             return accountsDto;
-
         } else {
-
             throw new NotFoundException("User not found");
-
         }
-
     }
 
     @Override
