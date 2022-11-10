@@ -2,28 +2,29 @@ package org.alkemy.wallet.service.impl;
 
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.dto.UserDto;
+import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.exception.BadRequestException;
 import org.alkemy.wallet.exception.ForbiddenException;
 import org.alkemy.wallet.exception.NotFoundException;
 import org.alkemy.wallet.mapper.UserMapper;
 
-import org.alkemy.wallet.model.Role;
-import org.alkemy.wallet.model.RoleName;
-import org.alkemy.wallet.model.User;
+import org.alkemy.wallet.model.*;
+import org.alkemy.wallet.repository.IFixedTermDepositRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -31,12 +32,17 @@ public class UserServiceImpl implements IUserService {
     private final IUserRepository userRepository;
     private final UserMapper userMapper;
     private final IAccountService accountService;
+    private final IFixedTermDepositRepository fixedTermDepositRepository;
 
     @Autowired
-    public UserServiceImpl(IUserRepository userRepository, UserMapper userMapper, IAccountService accountService) {
+    public UserServiceImpl(IUserRepository userRepository,
+                           UserMapper userMapper,
+                           IAccountService accountService,
+                           IFixedTermDepositRepository fixedTermDepositRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.accountService = accountService;
+        this.fixedTermDepositRepository = fixedTermDepositRepository;
     }
 
     @Override
@@ -47,16 +53,19 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<UserDto> getAll() {
-        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        User loggedUser = userRepository.findByEmail(loggedUserEmail);
+    public Page<UserDto> getAll(Integer pageNumber) {
 
-        if(!loggedUser.getRole().getRoleName().name().equals("ADMIN"))
-            throw new ForbiddenException("You do not have permission to enter.");
+        if(pageNumber == null || pageNumber < 0)
+            throw new BadRequestException("The page number is invalid.");
 
-        return userRepository.findAll().stream().
-                map(user -> userMapper.userToUserDTO(user)).
-                collect(Collectors.toList());
+        Page<User> users = userRepository.findAll(PageRequest.of(pageNumber,10));
+
+        if((users.getTotalPages() - 1) < pageNumber){
+            throw new BadRequestException("The page number is greater than the total number of pages.");
+        }
+
+        return users.map(user -> userMapper.userToUserDTO(user));
+
     }
 
     @Override
@@ -94,6 +103,8 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public List<String> getBalance() {
+        String noBalanceFound = "No balance data found for this user";
+
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         Long userId = userRepository.findByEmail(userEmail).getId();
 
@@ -104,7 +115,60 @@ public class UserServiceImpl implements IUserService {
             balances.add(account.getCurrency() + ": " + account.getBalance());
         }
 
+        if (balances.isEmpty())
+            balances.add(noBalanceFound);
+
+        List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositRepository.findAll();
+
+        for (FixedTermDeposit fixedTermDeposit : fixedTermDeposits) {
+            if (fixedTermDeposit.getAccount().getId().equals(userId)) {
+                balances.add("Fixed term deposit: " + fixedTermDeposit.getAmount() +
+                        " | Interest: " + fixedTermDeposit.getInterest());
+            }
+        }
+
+        if (balances.contains(noBalanceFound))
+            throw new NotFoundException("No balance nor fixed term deposit data found for this user");
+
         return balances;
+    }
+
+    @Override
+    public UserDto updateUser(Long id, UserUpdateDto userUpdateDto) {
+        if(userUpdateDto.firstName == null)
+            throw new BadRequestException("firstName is mandatory");
+        if(userUpdateDto.lastName == null)
+            throw new BadRequestException("lastName is mandatory");
+
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty())
+            throw new NotFoundException("No user with id: " + id);
+
+        if (loggedUserId != id)
+            throw new ForbiddenException("You are not allowed to view this user");
+
+        user.get().setFirstName(userUpdateDto.firstName);
+        user.get().setLastName(userUpdateDto.lastName);
+        user.get().setUpdateDate(new Date());
+        return userMapper.userToUserDTO(userRepository.save(user.get()));
+    }
+
+    @Override
+    public UserDto getById(Long id) {
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty())
+            throw new NotFoundException("No user with id: " + id);
+
+        if (loggedUserId != id)
+            throw new ForbiddenException("You are not allowed to view this user");
+
+        return userMapper.userToUserDTO(user.get());
     }
 
 }

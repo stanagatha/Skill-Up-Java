@@ -5,10 +5,13 @@ import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/accounts")
@@ -24,6 +27,13 @@ public class AccountController {
         this.userService = userService;
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @GetMapping
+    public ResponseEntity<Page<AccountDto>> getAll(@RequestParam("page") Integer pageNumber) {
+        return ResponseEntity.ok().body(accountService.getAll(pageNumber));
+    }
+
+    @Secured({"ROLE_ADMIN"})
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<AccountDto>> getAllByUserId(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok().body(accountService.findAllByUser(userId));
@@ -39,4 +49,9 @@ public class AccountController {
         return ResponseEntity.ok().body(userService.getBalance());
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<AccountDto> edit(@PathVariable(name = "id") Long id,
+                                           @RequestBody Map<String, Double> requestBody){
+        return ResponseEntity.ok().body(accountService.edit(id, requestBody.get("transactionLimit")));
+    }
 }
