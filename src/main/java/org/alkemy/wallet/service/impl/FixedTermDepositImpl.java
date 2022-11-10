@@ -50,13 +50,15 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
         if (user == null || account == null){
             throw new NotFoundException("Not exist");
         }
-
         Long depositDuration = ( depositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
         if (depositDuration < 30){
             throw new BadRequestException("Time cannot be minor of 30");
         }
         if(account.getBalance()< depositRequestDto.getAmount() ){
             throw new BadRequestException("Insufficient balance to carry out the operation");
+        }
+        if (depositRequestDto.getAmount() <= 0){
+            throw new BadRequestException("Amount be greater than 0");
         }
         Double interest = depositRequestDto.getAmount() * 0.05 * depositDuration;
         FixedTermDeposit fixedTermDeposit = new FixedTermDeposit();
