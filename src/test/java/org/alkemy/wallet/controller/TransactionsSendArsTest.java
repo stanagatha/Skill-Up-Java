@@ -133,4 +133,14 @@ public class TransactionsSendArsTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Cannot be the same account"));
     }
+
+    @Test
+    void post_DestinationAccountWithDifferentCurrency_BadRequestResponse() throws Exception {
+        destinyAccount.setCurrency(Currency.USD);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Cannot be different types of currency"));
+    }
 }
