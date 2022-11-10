@@ -88,7 +88,17 @@ public class FixedDepositTest {
     mockMvc.perform(request)
     .andExpect(status().isOk())
     .andExpect(content().json(jsonResponse));
-    //.andReturn();
+  }
+
+  @Test
+  public void create_NoTokenProvided_UnathorizedResponse() throws Exception{
+    RequestBuilder request = MockMvcRequestBuilders
+      .post("/fixedDeposit")
+      .content(jsonMapper.writeValueAsString(fixedTermDepositRequestDto))
+      .contentType(MediaType.APPLICATION_JSON);
+
+    mockMvc.perform(request)
+    .andExpect(status().isUnauthorized());
   }
 
 }
