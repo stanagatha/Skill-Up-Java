@@ -78,7 +78,6 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
         if (depositDuration < 30){
             throw new BadRequestException("Time cannot be minor of 30");
         }
-        
         Double interest = depositRequestDto.getAmount() * 0.05 * depositDuration;
         FixedTermDepositSimulateDto fixedTermDepositDto = new FixedTermDepositSimulateDto();
         fixedTermDepositDto.setAmount(depositRequestDto.getAmount());
