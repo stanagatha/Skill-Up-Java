@@ -1,6 +1,7 @@
 package org.alkemy.wallet.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.alkemy.wallet.dto.AccountBalanceDto;
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.model.Currency;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@Tag(name = "Accounts", description = "AccountController")
 @RequestMapping("/accounts")
 public class AccountController {
 
@@ -31,7 +33,7 @@ public class AccountController {
 
     @GetMapping
     @Operation(summary = "Get all accounts",
-               description = "Only accessible as an ADMIN. Paginated (initial number: 0).")
+            description = "Only accessible as an ADMIN. Paginated (initial number: 0).")
     @Secured({"ROLE_ADMIN"})
     public ResponseEntity<Page<AccountDto>> getAll(@RequestParam("page") Integer pageNumber) {
         return ResponseEntity.ok().body(accountService.getAll(pageNumber));
@@ -39,7 +41,7 @@ public class AccountController {
 
     @GetMapping("/{userId}")
     @Operation(summary = "Get all accounts owned by provided user ID",
-               description = "Only accessible as an ADMIN.")
+            description = "Only accessible as an ADMIN.")
     @Secured({"ROLE_ADMIN"})
     public ResponseEntity<List<AccountDto>> getAllByUserId(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok().body(accountService.findAllByUser(userId));
@@ -47,16 +49,16 @@ public class AccountController {
 
     @PostMapping
     @Operation(summary = "Create a new account for the currently authenticated user",
-               description = "Must provide currency type.<br>" +
-                             "Multiple accounts with the same currency type is not allowed.<br>" +
-                             "Balance amount set to 0.")
+            description = "Must provide currency type.<br>" +
+                    "Multiple accounts with the same currency type is not allowed.<br>" +
+                    "Balance amount set to 0.")
     public ResponseEntity<AccountDto> createAccount(@RequestParam Currency currency){
         return ResponseEntity.ok().body(accountService.createAccount(currency));
     }
 
     @GetMapping("/balance")
     @Operation(summary = "Get balance information from currently authenticated user",
-               description = "Show balance information from owned accounts, also fixed-term deposits, both ARS and USD.")
+            description = "Show balance information from owned accounts, also fixed-term deposits, both ARS and USD.")
     public ResponseEntity<AccountBalanceDto> getBalance() {
         return ResponseEntity.ok().body(userService.getBalance());
     }
@@ -68,11 +70,11 @@ public class AccountController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Update an existing account",
-               description = "The account must be from currently authenticated user. " +
-                             "Can only modify \"transaction limit\" field.")
+    @Operation(summary = "Update an account",
+            description = "The account must be from the currently authenticated user. " +
+                    "Can only modify \"transaction limit\" field.")
     public ResponseEntity<AccountDto> editById(@PathVariable("id") Long id,
-                                           @RequestBody Map<String, Double> requestBody){
+                                               @RequestBody Map<String, Double> requestBody){
         return ResponseEntity.ok().body(accountService.editById(id, requestBody.get("transactionLimit")));
     }
 
