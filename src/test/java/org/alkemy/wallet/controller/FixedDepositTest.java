@@ -15,8 +15,11 @@ import org.alkemy.wallet.security.JwtTokenUtil;
 import org.alkemy.wallet.service.IFixedTermDepositService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -30,7 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WebMvcTest(FixedTermDepositController.class)
+//@WebMvcTest(FixedTermDepositController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class FixedDepositTest {
 
   @Autowired
@@ -39,7 +44,7 @@ public class FixedDepositTest {
   private IFixedTermDepositService fixedTermDepositService;
   @Autowired
   private ObjectMapper jsonMapper;
-  @MockBean
+  @Autowired
   private JwtTokenUtil jwtTokenUtil;
   @MockBean
   private IUserRepository userRepository;
@@ -53,9 +58,7 @@ public class FixedDepositTest {
     Role adminRole = new Role(2L, RoleName.ADMIN, "ADMIN Role", new Date(), new Date());
 
     user = new User("user", "test", "userEmail@email.com", "1234", userRole);
-    List<User> userList= new ArrayList<>();
-    userList.add(user);
-    when(userRepository.findAll()).thenReturn(userList);
+    when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
 
     fixedTermDepositRequestDto.setAmount(1000.0);
     fixedTermDepositRequestDto.setClosingDate(new Date());
@@ -72,7 +75,7 @@ public class FixedDepositTest {
   }
 
   @Test
-  @WithMockUser(username = "userEmail@email.com", password = "1234", roles = {"USER"})
+  //@WithMockUser(username = "userEmail@email.com", password = "1234", roles = {"USER"})
   public void fixedDepositShouldCreateDto() throws Exception{
     String userToken = jwtTokenUtil.generateToken(new org.springframework.security.core.userdetails.User("userEmail@email.com", "1234", new ArrayList<>()));
     String jsonResponse = jsonMapper.writeValueAsString(fixedTermDepositDto);
