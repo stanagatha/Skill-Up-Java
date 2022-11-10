@@ -95,4 +95,21 @@ public class UsersUpdateTest {
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void patch_NoFieldProvided_UnauthorizedResponse() throws Exception {
+        userUpdateDto.setFirstName(null);
+        mockMvc.perform(patch("/users/" + user.getId())
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("firstName is mandatory"));
+        userUpdateDto.setFirstName("New name");
+        userUpdateDto.setLastName(null);
+        mockMvc.perform(patch("/users/" + user.getId())
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("lastName is mandatory"));
+    }
 }
