@@ -15,6 +15,8 @@ import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,43 +43,40 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
+    public Page<AccountDto> getAll(Integer pageNumber){
+
+        if(pageNumber == null || pageNumber < 0)
+            throw new BadRequestException("The page number is invalid.");
+
+        Page<Account> accounts = accountRepository.findAll(PageRequest.of(pageNumber,10));
+
+        if((accounts.getTotalPages() - 1) < pageNumber){
+            throw new BadRequestException("The page number is greater than the total number of pages.");
+        }
+
+        return accounts.map(account -> accountMapper.accountToAccountDto(account));
+
+    }
+
+    @Override
     public List<AccountDto> findAllByUser(Long userId) {
-        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        User loggedUser = userRepository.findByEmail(loggedUserEmail);
-
-        if(loggedUser.getRole().getRoleName() != RoleName.ADMIN)
-            throw new ForbiddenException("You do not have permission to enter.");
-
         if (userId == null || userId <= 0)
             throw new NotFoundException("User id is not valid.");
 
         Optional<User> userOptional = userRepository.findById(userId);
-
         if(userOptional.isPresent()){
-
             List<Account> accounts = accountRepository.findAllByUser(userOptional.get());
-
             List<AccountDto> accountsDto = new ArrayList<>();
-
             if(!accounts.isEmpty()){
-
                 for (Account account: accounts) {
-
                     AccountDto accountDto = accountMapper.accountToAccountDto(account);
-
                     accountsDto.add(accountDto);
-
                 }
             }
-
             return accountsDto;
-
         } else {
-
             throw new NotFoundException("User not found");
-
         }
-
     }
 
     @Override
@@ -118,9 +117,9 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public AccountDto edit(Long id, Double transactionLimit) {
-        if (transactionLimit == null)
-            throw new BadRequestException("Transaction is mandatory");
+    public AccountDto editById(Long id, Double transactionLimit) {
+            if (transactionLimit == null)
+                throw new BadRequestException("Transaction limit is mandatory");
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
@@ -135,6 +134,21 @@ public class AccountServiceImpl implements IAccountService {
         account.get().setTransactionLimit(transactionLimit);
         account.get().setUpdateDate(new Date());
         return accountMapper.accountToAccountDto(accountRepository.save(account.get()));
+    }
+
+    @Override
+    public AccountDto getById(Long id) {
+        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
+
+        Optional<Account> account = accountRepository.findById(id);
+        if (account.isEmpty())
+            throw new NotFoundException("Account not found");
+
+        if (account.get().getUser().getId() != loggedUserId)
+            throw new ForbiddenException("You are not allowed to view this account");
+
+        return accountMapper.accountToAccountDto(account.get());
     }
 
 }
