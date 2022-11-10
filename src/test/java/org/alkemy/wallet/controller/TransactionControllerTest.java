@@ -2,6 +2,7 @@ package org.alkemy.wallet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alkemy.wallet.dto.TransactionRequestDto;
+import org.alkemy.wallet.dto.TransactionSendMoneyDto;
 import org.alkemy.wallet.model.*;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.ITransactionRepository;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class TransactionsDepositTest {
+public class TransactionControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -46,6 +47,8 @@ public class TransactionsDepositTest {
     private User admin;
     private Account account;
     private TransactionRequestDto transactionRequestDto;
+    private TransactionSendMoneyDto transactionSendMoneyDto;
+    private Account destinyAccount;
 
 
     @BeforeEach
@@ -63,7 +66,7 @@ public class TransactionsDepositTest {
         userToken = jwtTokenUtil.generateToken(loggedUserDetails);
 
         account = new Account();
-        account.setBalance(5000D);
+        account.setBalance(1000D);
         account.setId(1L);
         account.setUser(user);
         account.setCurrency(Currency.ARS);
@@ -74,7 +77,7 @@ public class TransactionsDepositTest {
         when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
         when(accountRepository.findByCurrencyAndUser(account.getCurrency(), account.getUser())).thenReturn(account);
 
-        Account destinyAccount = new Account();
+        destinyAccount = new Account();
         destinyAccount.setBalance(10300D);
         destinyAccount.setId(2L);
         destinyAccount.setUser(admin);
@@ -91,11 +94,16 @@ public class TransactionsDepositTest {
         transactionRequestDto.setDescription("String");
         transactionRequestDto.setAccountId(1L);
 
+        transactionSendMoneyDto = new TransactionSendMoneyDto();
+        transactionSendMoneyDto.setAmount(550D);
+        transactionSendMoneyDto.setDescription("SendArs");
+        transactionSendMoneyDto.setDestinationAccountId(2L);
+
         jsonMapper = new ObjectMapper();
     }
 
     @Test
-    void post_TokenProvided_CreatedResponse() throws Exception {
+    void postDeposit_TokenProvided_CreatedResponse() throws Exception {
         mockMvc.perform(post("/transactions/deposit")
                         .header("Authorization", "Bearer " + userToken)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
@@ -107,7 +115,7 @@ public class TransactionsDepositTest {
     }
 
     @Test
-    void post_InvalidAmountProvided_BadRequestResponse() throws Exception {
+    void postDeposit_InvalidAmountProvided_BadRequestResponse() throws Exception {
         transactionRequestDto.setAmount(-100D);
         mockMvc.perform(post("/transactions/deposit")
                         .header("Authorization", "Bearer " + userToken)
@@ -117,7 +125,7 @@ public class TransactionsDepositTest {
     }
 
     @Test
-    void post_DestinationAccountNull_BadRequestResponse() throws Exception {
+    void postDeposit_DestinationAccountNull_BadRequestResponse() throws Exception {
         transactionRequestDto.setAccountId(null);
         mockMvc.perform(post("/transactions/deposit")
                         .header("Authorization", "Bearer " + userToken)
@@ -127,7 +135,7 @@ public class TransactionsDepositTest {
     }
 
     @Test
-    void post_DestinationAccountNotFound_NotFoundResponse() throws Exception {
+    void postDeposit_DestinationAccountNotFound_NotFoundResponse() throws Exception {
         transactionRequestDto.setAccountId(10L);
         mockMvc.perform(post("/transactions/deposit")
                         .header("Authorization", "Bearer " + userToken)
@@ -137,7 +145,7 @@ public class TransactionsDepositTest {
     }
 
     @Test
-    void post_InvalidAccount_ForbiddenResponse() throws Exception {
+    void postDeposit_InvalidAccount_ForbiddenResponse() throws Exception {
         account.setUser(admin);
         mockMvc.perform(post("/transactions/deposit")
                         .header("Authorization", "Bearer " + userToken)
@@ -147,10 +155,91 @@ public class TransactionsDepositTest {
     }
 
     @Test
-    void post_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
+    void postDeposit_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
         mockMvc.perform(post("/transactions/deposit")
                         .header("Authorization", "Bearer " + userToken+"fail")
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void postSendArs_TokenProvided_OkResponse() throws Exception {
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.amount").value(550D))
+                .andExpect(jsonPath("$.accountId").value(1L))
+                .andExpect(jsonPath("$.description").value("SendArs"))
+                .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.PAYMENT
+                        .name()));
+    }
+
+    @Test
+    void postSendArs_InvalidAmountProvided_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setAmount(-100D);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Amount must be greater than 0"));
+    }
+
+    @Test
+    void postSendArs_DestinationAccountNull_NotFoundResponse() throws Exception {
+        transactionSendMoneyDto.setDestinationAccountId(null);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Not found"));
+    }
+
+    @Test
+    void postSendArs_DestinationAccountEqualsCurrentAccount_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setDestinationAccountId(1L);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Cannot be the same account"));
+    }
+
+    @Test
+    void postSendArs_DestinationAccountWithDifferentCurrency_BadRequestResponse() throws Exception {
+        destinyAccount.setCurrency(Currency.USD);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Cannot be different types of currency"));
+    }
+
+    @Test
+    void postSendArs_AmountAboveTheLimit_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setAmount(12000D);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Amount must be less than the limit"));
+    }
+
+    @Test
+    void postSendArs_InsufficientBalance_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setAmount(1500D);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Not enough founds"));
+    }
+
+    @Test
+    void postSendArs_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
+        mockMvc.perform(post("/transactions/deposit")
+                        .header("Authorization", "Bearer " + userToken + "fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
                 .andExpect(status().isUnauthorized());
     }
 }
