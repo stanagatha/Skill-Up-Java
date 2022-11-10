@@ -153,4 +153,14 @@ public class TransactionsSendArsTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Amount must be less than the limit"));
     }
+
+    @Test
+    void post_InsufficientBalance_BadRequestResponse() throws Exception {
+        transactionSendMoneyDto.setAmount(1500D);
+        mockMvc.perform(post("/transactions/sendArs")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Not enough founds"));
+    }
 }
