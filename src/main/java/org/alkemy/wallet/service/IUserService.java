@@ -1,5 +1,6 @@
 package org.alkemy.wallet.service;
 
+import org.alkemy.wallet.dto.AccountBalanceDto;
 import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.model.User;
@@ -17,7 +18,7 @@ public interface IUserService {
 
     User save(User user);
 
-    List<String> getBalance();
+    AccountBalanceDto getBalance();
 
     UserDto updateUser(Long id, UserUpdateDto userUpdateDto);
 

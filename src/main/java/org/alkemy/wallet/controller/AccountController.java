@@ -1,5 +1,6 @@
 package org.alkemy.wallet.controller;
 
+import org.alkemy.wallet.dto.AccountBalanceDto;
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.service.IAccountService;
@@ -45,7 +46,7 @@ public class AccountController {
     }
 
     @GetMapping("/balance")
-    public ResponseEntity<List<String>> getBalance() {
+    public ResponseEntity<AccountBalanceDto> getBalance() {
         return ResponseEntity.ok().body(userService.getBalance());
     }
 
