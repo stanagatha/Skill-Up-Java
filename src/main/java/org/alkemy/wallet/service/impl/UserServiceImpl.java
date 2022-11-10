@@ -14,16 +14,16 @@ import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -47,16 +47,19 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<UserDto> getAll() {
-        String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        User loggedUser = userRepository.findByEmail(loggedUserEmail);
+    public Page<UserDto> getAll(Integer pageNumber) {
 
-        if(!loggedUser.getRole().getRoleName().name().equals("ADMIN"))
-            throw new ForbiddenException("You do not have permission to enter.");
+        if(pageNumber == null || pageNumber < 0)
+            throw new BadRequestException("The page number is invalid.");
 
-        return userRepository.findAll().stream().
-                map(user -> userMapper.userToUserDTO(user)).
-                collect(Collectors.toList());
+        Page<User> users = userRepository.findAll(PageRequest.of(pageNumber,10));
+
+        if((users.getTotalPages() - 1) < pageNumber){
+            throw new BadRequestException("The page number is greater than the total number of pages.");
+        }
+
+        return users.map(user -> userMapper.userToUserDTO(user));
+
     }
 
     @Override

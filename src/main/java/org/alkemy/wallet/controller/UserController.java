@@ -6,12 +6,10 @@ import org.alkemy.wallet.dto.UserDto;
 import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
 
 @RestController
 @Tag(name = "Users", description = "UserController")
@@ -24,15 +22,15 @@ public class UserController {
     public UserController(IUserService userService) {
         this.userService = userService;
     }
-
-    @GetMapping
+    
     @Operation(summary = "Get all users",
                description = "Only accessible as an ADMIN.")
     @Secured({"ROLE_ADMIN"})
-    public ResponseEntity<List<UserDto>> getAll() {
-        return ResponseEntity.ok().body(userService.getAll());
+    @GetMapping
+    public ResponseEntity<Page<UserDto>> getAll(@RequestParam("page") Integer pageNumber) {
+        return ResponseEntity.ok().body(userService.getAll(pageNumber));
     }
-
+    
     @GetMapping("/current")
     @Operation(summary = "Get information from currently authenticated user")
     public ResponseEntity<UserDto> getCurrent() {
