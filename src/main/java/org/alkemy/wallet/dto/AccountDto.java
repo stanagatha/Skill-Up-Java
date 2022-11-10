@@ -5,12 +5,13 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.alkemy.wallet.model.Currency;
 
 @Data
 public class AccountDto implements Serializable {
 
     private Long id;
-    private String currency;
+    private Currency currency;
     private Double transactionLimit;
     private Double balance;
     @JsonFormat(pattern = "yyyy/MM/dd")

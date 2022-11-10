@@ -1,14 +1,14 @@
 package org.alkemy.wallet.service.impl;
 
-import org.alkemy.wallet.dto.AccountDto;
-import org.alkemy.wallet.dto.UserDto;
-import org.alkemy.wallet.dto.UserUpdateDto;
+import org.alkemy.wallet.dto.*;
 import org.alkemy.wallet.exception.BadRequestException;
 import org.alkemy.wallet.exception.ForbiddenException;
 import org.alkemy.wallet.exception.NotFoundException;
+import org.alkemy.wallet.mapper.FixedTermDepositMapper;
 import org.alkemy.wallet.mapper.UserMapper;
 
 import org.alkemy.wallet.model.*;
+import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.repository.IFixedTermDepositRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IAccountService;
@@ -21,10 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -33,16 +30,19 @@ public class UserServiceImpl implements IUserService {
     private final UserMapper userMapper;
     private final IAccountService accountService;
     private final IFixedTermDepositRepository fixedTermDepositRepository;
+    private final FixedTermDepositMapper fixedTermDepositMapper;
 
     @Autowired
     public UserServiceImpl(IUserRepository userRepository,
                            UserMapper userMapper,
                            IAccountService accountService,
-                           IFixedTermDepositRepository fixedTermDepositRepository) {
+                           IFixedTermDepositRepository fixedTermDepositRepository,
+                           FixedTermDepositMapper fixedTermDepositMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.accountService = accountService;
         this.fixedTermDepositRepository = fixedTermDepositRepository;
+        this.fixedTermDepositMapper = fixedTermDepositMapper;
     }
 
     @Override
@@ -102,33 +102,39 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<String> getBalance() {
-        String noBalanceFound = "No balance data found for this user";
-
+    public AccountBalanceDto getBalance() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         Long userId = userRepository.findByEmail(userEmail).getId();
 
         List<AccountDto> accounts = accountService.findAllByUser(userId);
-        List<String> balances = new ArrayList<>();
 
-        for (AccountDto account : accounts) {
-            balances.add(account.getCurrency() + ": " + account.getBalance());
+        if (accounts.isEmpty())
+            throw new NotFoundException("No balance data found for this user");
+
+        AccountBalanceDto balances = new AccountBalanceDto();
+        HashMap<Currency, Double> balance = new HashMap<>();
+
+        for (Currency currency : Currency.values()) {
+            balance.put(currency, 0D);
         }
 
-        if (balances.isEmpty())
-            balances.add(noBalanceFound);
+        for (AccountDto account : accounts) {
+            Double oldBalanceAmount = balance.get(account.getCurrency());
+            balance.put(account.getCurrency(), oldBalanceAmount + account.getBalance());
+        }
+
+        balances.setBalances(balance);
 
         List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositRepository.findAll();
+        List<FixedTermDepositDto> fixedTermDepositList = new ArrayList<>();
 
         for (FixedTermDeposit fixedTermDeposit : fixedTermDeposits) {
             if (fixedTermDeposit.getAccount().getId().equals(userId)) {
-                balances.add("Fixed term deposit: " + fixedTermDeposit.getAmount() +
-                        " | Interest: " + fixedTermDeposit.getInterest());
+                fixedTermDepositList.add(fixedTermDepositMapper.fixedTermDepositToFixedTermDepositDto(fixedTermDeposit));
             }
         }
 
-        if (balances.contains(noBalanceFound))
-            throw new NotFoundException("No balance nor fixed term deposit data found for this user");
+        balances.setFixedTermDepositList(fixedTermDepositList);
 
         return balances;
     }

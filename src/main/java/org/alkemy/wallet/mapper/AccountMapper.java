@@ -14,7 +14,7 @@ public class AccountMapper {
 
         AccountDto accountDto = new AccountDto();
         accountDto.setId(account.getId());
-        accountDto.setCurrency(account.getCurrency().toString());
+        accountDto.setCurrency(account.getCurrency());
         accountDto.setTransactionLimit(account.getTransactionLimit());
         accountDto.setBalance(account.getBalance());
         accountDto.setCreationDate(account.getCreationDate());
@@ -32,11 +32,7 @@ public class AccountMapper {
         Account account = new Account();
 
         account.setId(accountDto.getId());
-        if(accountDto.getCurrency().equalsIgnoreCase("USD")){
-            account.setCurrency(Currency.USD);
-        } else {
-            account.setCurrency(Currency.ARS);
-        }
+        account.setCurrency(accountDto.getCurrency());
         account.setTransactionLimit(accountDto.getTransactionLimit());
         account.setBalance(accountDto.getBalance());
         account.setCreationDate(accountDto.getCreationDate());
