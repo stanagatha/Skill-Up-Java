@@ -14,7 +14,6 @@ import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.ITransactionRepository;
 import org.alkemy.wallet.repository.IUserRepository;
-import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -73,7 +72,7 @@ public class TransactionServiceImpl implements ITransactionService {
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
         if (account.get().getUser().getId() != loggedUserId && transactionDto.getTypeTransaction() != TypeTransaction.INCOME)
-            throw new ForbiddenException(message("account.not-allow"));
+            throw new ForbiddenException(message("account.not-allow-registry"));
         if (transactionDto.getTypeTransaction() == TypeTransaction.PAYMENT &&
             account.get().getBalance() < transactionDto.getAmount()){
             throw new BadRequestException(message("account.no-enough"));

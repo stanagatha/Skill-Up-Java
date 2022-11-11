@@ -165,7 +165,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isForbidden())
-                .andExpect(content().string(messageSource.getMessage("account.not-allow",null, Locale.US)));
+                .andExpect(content().string(messageSource.getMessage("account.not-allow-registry",null, Locale.US)));
 
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
