@@ -75,9 +75,8 @@ public class TransactionServiceImpl implements ITransactionService {
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
-        if (account.get().getUser().getId() != loggedUserId)
+        if (account.get().getUser().getId() != loggedUserId && transactionDto.getTypeTransaction() != TypeTransaction.INCOME)
             throw new ForbiddenException(message("account.not-allow"));
-
         if (transactionDto.getTypeTransaction() == TypeTransaction.PAYMENT &&
             account.get().getBalance() < transactionDto.getAmount()){
             throw new BadRequestException(message("account.no-enough"));
@@ -153,12 +152,12 @@ public class TransactionServiceImpl implements ITransactionService {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
-        Account account = accountRepository.findByCurrencyAndUser(currency, user);
+        Account originAccount = accountRepository.findByCurrencyAndUser(currency, user);
         Account destinationAccount = accountRepository.findById(transactionSendMoneyDto.getDestinationAccountId()).orElse(null);
-        if (user == null || account == null || destinationAccount == null){
+        if (user == null || originAccount == null || destinationAccount == null){
             throw new NotFoundException(message("not-found.error"));
         }
-        if (account == destinationAccount){
+        if (originAccount == destinationAccount){
             throw new IllegalArgumentException(message("account.not-same"));
         }
         if (destinationAccount.getCurrency() != currency){
@@ -167,21 +166,21 @@ public class TransactionServiceImpl implements ITransactionService {
         if (transactionSendMoneyDto.getAmount() <= 0){
             throw new IllegalArgumentException(message("amount.invalid"));
         }
-        if (transactionSendMoneyDto.getAmount() > account.getTransactionLimit()){
+        if (transactionSendMoneyDto.getAmount() > originAccount.getTransactionLimit()){
             throw new IllegalArgumentException(message("amount.above-limit"));
         }
 
         TransactionRequestDto originTransactionDto = new TransactionRequestDto();
         originTransactionDto.setAmount(transactionSendMoneyDto.getAmount());
         originTransactionDto.setDescription(transactionSendMoneyDto.getDescription());
-        originTransactionDto.setAccountId(account.getId());
+        originTransactionDto.setAccountId(originAccount.getId());
         originTransactionDto.setTypeTransaction(TypeTransaction.PAYMENT);
         TransactionDto transactionDto = save(originTransactionDto);
 
         TransactionRequestDto destinyTransactionDto = new TransactionRequestDto();
         destinyTransactionDto.setAmount(transactionSendMoneyDto.getAmount());
         destinyTransactionDto.setDescription(transactionSendMoneyDto.getDescription());
-        destinyTransactionDto.setAccountId(account.getId());
+        destinyTransactionDto.setAccountId(destinationAccount.getId());
         destinyTransactionDto.setTypeTransaction(TypeTransaction.INCOME);
         save(destinyTransactionDto);
 

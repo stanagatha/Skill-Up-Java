@@ -54,7 +54,7 @@ public class FixedDepositTest {
   private FixedTermDepositDto fixedTermDepositDto = new FixedTermDepositDto();
 
   @BeforeEach
-  private void setUp(){
+  void setUp(){
     Role userRole = new Role(1L, RoleName.USER, "USER Role", new Date(), new Date());
     Role adminRole = new Role(2L, RoleName.ADMIN, "ADMIN Role", new Date(), new Date());
 
