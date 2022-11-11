@@ -14,9 +14,9 @@ import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.ITransactionRepository;
 import org.alkemy.wallet.repository.IUserRepository;
-import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -31,21 +31,24 @@ public class TransactionServiceImpl implements ITransactionService {
 
     private final ITransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
-    private final IAccountService accountService;
     private final IUserRepository userRepository;
     private final IAccountRepository accountRepository;
+    private final MessageSource messageSource;
 
     @Autowired
     public TransactionServiceImpl(ITransactionRepository transactionRepository,
                                   TransactionMapper transactionMapper,
-                                  IAccountService accountService,
                                   IUserRepository userRepository,
-                                  IAccountRepository accountRepository) {
+                                  IAccountRepository accountRepository, MessageSource messageSource) {
         this.transactionRepository = transactionRepository;
         this.transactionMapper = transactionMapper;
-        this.accountService = accountService;
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.messageSource = messageSource;
+    }
+
+    private String message(String message){
+        return messageSource.getMessage(message,null,Locale.US);
     }
 
     @Override
@@ -53,27 +56,26 @@ public class TransactionServiceImpl implements ITransactionService {
     public TransactionDto save(TransactionRequestDto transactionDto) {
 
         if (transactionDto.getAmount() <=0)
-            throw new BadRequestException("Amount must be greater than 0");
+            throw new BadRequestException(message("amount.invalid"));
 
         List<TypeTransaction> validTransactionTypes = Arrays.stream(TypeTransaction.values()).collect(Collectors.toList());
         if (!validTransactionTypes.contains(transactionDto.getTypeTransaction()))
-            throw new BadRequestException("Not a valid transaction type");
+            throw new BadRequestException(message("transaction.invalid"));
 
         if (transactionDto.getAccountId() == null)
-            throw new BadRequestException("Destination account id is mandatory");
+            throw new BadRequestException(message("account.mandatory"));
 
         Optional<Account> account = accountRepository.findById(transactionDto.getAccountId());
         if (account.isEmpty())
-            throw new NotFoundException("Account not found");
+            throw new NotFoundException(message("account.not-found"));
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
         if (account.get().getUser().getId() != loggedUserId && transactionDto.getTypeTransaction() != TypeTransaction.INCOME)
-            throw new ForbiddenException("Not allow to register transactions in other accounts than yours");
-
+            throw new ForbiddenException(message("account.not-allow-registry"));
         if (transactionDto.getTypeTransaction() == TypeTransaction.PAYMENT &&
             account.get().getBalance() < transactionDto.getAmount()){
-            throw new BadRequestException("Not enough founds");
+            throw new BadRequestException(message("account.no-enough"));
         }
 
         Transaction transaction = new Transaction();
@@ -100,11 +102,11 @@ public class TransactionServiceImpl implements ITransactionService {
 
         Optional<Transaction> transaction = transactionRepository.findById(id);
         if (transaction.isEmpty())
-            throw new NotFoundException("No transaction with id: " + id);
+            throw new NotFoundException(messageSource.getMessage("transaction.invalid-id",new Long[]{id},Locale.US));
 
         Account account = transaction.get().getAccount();
         if (account.getUser().getId() != loggedUserId)
-            throw new ForbiddenException("You are not allowed to view this transaction");
+            throw new ForbiddenException(message("transaction.not-allow"));
 
         return transactionMapper.transactionToTransactionDto(transaction.get());
     }
@@ -112,18 +114,18 @@ public class TransactionServiceImpl implements ITransactionService {
     @Override
     public Page<TransactionDto> getAllByUser(long userId, Integer pageNumber) {
         if(pageNumber == null || pageNumber < 0)
-            throw new BadRequestException("The page number is invalid.");
+            throw new BadRequestException(message("page.invalid.number"));
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         User loggedUser = userRepository.findByEmail(loggedUserEmail);
         Long loggedUserId = loggedUser.getId();
 
         if (loggedUserId != userId)
-            throw new ForbiddenException("Unable to see other user's transactions");
+            throw new ForbiddenException(message("transaction.unable"));
 
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty())
-            throw new NotFoundException("No user with id: " + userId);
+            throw new NotFoundException(messageSource.getMessage("user.invalid-id",new Long[]{userId},Locale.US));
 
         List<Account> accounts= accountRepository.findAllByUser(user.get());
         List<Transaction> transactions= new ArrayList<>();
@@ -134,7 +136,7 @@ public class TransactionServiceImpl implements ITransactionService {
         Page<Transaction> transactionPage = new PageImpl<>(transactions, PageRequest.of(pageNumber,10), transactions.size());
 
         if((transactionPage.getTotalPages() - 1) < pageNumber)
-            throw new BadRequestException("The page number is greater than the total number of pages.");
+            throw new BadRequestException(message("page.wrong-number"));
 
         return transactionPage.map(transaction -> transactionMapper.transactionToTransactionDto(transaction));
 
@@ -148,21 +150,20 @@ public class TransactionServiceImpl implements ITransactionService {
         User user = userRepository.findByEmail(email);
         Account originAccount = accountRepository.findByCurrencyAndUser(currency, user);
         Account destinationAccount = accountRepository.findById(transactionSendMoneyDto.getDestinationAccountId()).orElse(null);
-
         if (user == null || originAccount == null || destinationAccount == null){
-            throw new NotFoundException("Not found");
+            throw new NotFoundException(message("not-found.error"));
         }
         if (originAccount == destinationAccount){
-            throw new IllegalArgumentException("Cannot be the same account");
+            throw new IllegalArgumentException(message("account.not-same"));
         }
         if (destinationAccount.getCurrency() != currency){
-            throw new IllegalArgumentException("Cannot be different types of currency");
+            throw new IllegalArgumentException(message("account.diff-currency"));
         }
         if (transactionSendMoneyDto.getAmount() <= 0){
-            throw new IllegalArgumentException("Amount must be greater than 0");
+            throw new IllegalArgumentException(message("amount.invalid"));
         }
         if (transactionSendMoneyDto.getAmount() > originAccount.getTransactionLimit()){
-            throw new IllegalArgumentException("Amount must be less than the limit");
+            throw new IllegalArgumentException(message("amount.above-limit"));
         }
 
         TransactionRequestDto originTransactionDto = new TransactionRequestDto();
@@ -186,18 +187,18 @@ public class TransactionServiceImpl implements ITransactionService {
 	@Transactional
 	public TransactionDto edit(long id, String description) {
         if (description == null)
-            throw new BadRequestException("Description is mandatory");
+            throw new BadRequestException(message("transaction.mand-descript"));
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
 
         Optional<Transaction> transaction = transactionRepository.findById(id);
         if (transaction.isEmpty())
-            throw new NotFoundException("Transaction not found");
+            throw new NotFoundException(message("transaction.not-found"));
 
         Account account = transaction.get().getAccount();
         if (account.getUser().getId() != loggedUserId)
-            throw new ForbiddenException("You are not allowed to modify this transaction");
+            throw new ForbiddenException(message("transaction.not-allow-mod"));
 
         transaction.get().setDescript(description);
         return transactionMapper.transactionToTransactionDto(transaction.get());

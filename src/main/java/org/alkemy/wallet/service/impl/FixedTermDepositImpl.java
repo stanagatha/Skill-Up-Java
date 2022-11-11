@@ -14,11 +14,13 @@ import org.alkemy.wallet.repository.IFixedTermDepositRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.service.IFixedTermDepositService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Locale;
 
 @Service
 public class FixedTermDepositImpl implements IFixedTermDepositService {
@@ -27,13 +29,19 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
     private final IUserRepository iUserRepository;
     private final IAccountRepository iAccountRepository;
     private final FixedTermDepositMapper fixedTermDepositMapper;
+    private final MessageSource messageSource;
 
     @Autowired
-    public FixedTermDepositImpl(FixedTermDepositMapper fixedTermDepositMapper, IAccountRepository iAccountRepository, IUserRepository iUserRepository, IFixedTermDepositRepository iFixedTermDepositRepository) {
+    public FixedTermDepositImpl(FixedTermDepositMapper fixedTermDepositMapper, IAccountRepository iAccountRepository, IUserRepository iUserRepository, IFixedTermDepositRepository iFixedTermDepositRepository, MessageSource messageSource) {
         this.iFixedTermDepositRepository = iFixedTermDepositRepository;
         this.iUserRepository = iUserRepository;
         this.iAccountRepository = iAccountRepository;
         this.fixedTermDepositMapper = fixedTermDepositMapper;
+        this.messageSource = messageSource;
+    }
+
+    private String message(String message){
+        return messageSource.getMessage(message,null, Locale.US);
     }
 
     @Override
@@ -47,18 +55,21 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
         User user = iUserRepository.findByEmail(email);
         Account account = iAccountRepository.findByCurrencyAndUser(depositRequestDto.getCurrency(), user);
 
-        if (user == null || account == null){
-            throw new NotFoundException("Not exist");
+        if (user == null){
+            throw new NotFoundException(message("user.null-id"));
+        }
+        if(account == null){
+            throw new NotFoundException(message("account.not-found"));
         }
         Long depositDuration = ( depositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
         if (depositDuration < 30){
-            throw new BadRequestException("Time cannot be minor of 30");
+            throw new BadRequestException(message("fixed.invalid-time"));
         }
         if(account.getBalance()< depositRequestDto.getAmount() ){
-            throw new BadRequestException("Insufficient balance to carry out the operation");
+            throw new BadRequestException(message("fixed.no-balance"));
         }
         if (depositRequestDto.getAmount() <= 0){
-            throw new BadRequestException("Amount be greater than 0");
+            throw new BadRequestException(message("amount.invalid"));
         }
         Double interest = depositRequestDto.getAmount() * 0.05 * depositDuration;
         FixedTermDeposit fixedTermDeposit = new FixedTermDeposit();
@@ -78,10 +89,10 @@ public class FixedTermDepositImpl implements IFixedTermDepositService {
     public FixedTermDepositSimulateDto simulateDeposit(FixedTermDepositRequestDto depositRequestDto) {
         Long depositDuration = ( depositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
         if (depositDuration < 30){
-            throw new BadRequestException("Time cannot be minor of 30");
+            throw new BadRequestException(message("fixed.invalid-time"));
         }
         if (depositRequestDto.getAmount() <= 0){
-            throw new BadRequestException("Amount be greater than 0");
+            throw new BadRequestException(message("amount.invalid"));
         }
         Double interest = depositRequestDto.getAmount() * 0.05 * depositDuration;
         FixedTermDepositSimulateDto fixedTermDepositDto = new FixedTermDepositSimulateDto();

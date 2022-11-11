@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -22,10 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -41,6 +39,7 @@ class UserControllerTest {
     @Autowired private UserMapper userMapper;
     @Autowired private ObjectMapper jsonMapper;
     @MockBean private IUserRepository userRepositoryMock;
+    @Autowired private MessageSource messageSource;
 
     // Test fixture
     private String user1Token, user2Token, admin1Token;
@@ -307,14 +306,14 @@ class UserControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("firstName is mandatory"));
+                .andExpect(content().string(messageSource.getMessage("user.mandatory-name",null,Locale.US)));
         userUpdateDto.setFirstName("New name");
         userUpdateDto.setLastName(null);
         mockMvc.perform(patch("/users/" + user1.getId())
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("lastName is mandatory"));
+                .andExpect(content().string(messageSource.getMessage("user.mandatory-lastname",null,Locale.US)));
     }
 
     @Test
@@ -324,7 +323,7 @@ class UserControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("No user with id: " + idFail));
+                .andExpect(content().string(messageSource.getMessage("user.invalid-id",new Long[]{idFail}, Locale.US)));
     }
 
     @Test
@@ -333,6 +332,6 @@ class UserControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
                 .andExpect(status().isForbidden())
-                .andExpect(content().string("You are not allowed to view this user"));
+                .andExpect(content().string(messageSource.getMessage("user.not-allow-view",null,Locale.US)));
     }
 }

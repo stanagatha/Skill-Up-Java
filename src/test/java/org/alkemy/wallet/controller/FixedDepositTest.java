@@ -79,7 +79,7 @@ public class FixedDepositTest {
 
   @Test
   //@WithMockUser(username = "userEmail@email.com", password = "1234", roles = {"USER"})
-  public void create_userToken_200Status() throws Exception{
+  public void create_userToken_201Status() throws Exception{
     String userToken = jwtTokenUtil.generateToken(new org.springframework.security.core.userdetails.User("userEmail@email.com", "1234", new ArrayList<>()));
     String jsonResponse = jsonMapper.writeValueAsString(fixedTermDepositDto);
     RequestBuilder request = MockMvcRequestBuilders
@@ -89,7 +89,7 @@ public class FixedDepositTest {
       .header("Authorization", "Bearer " + userToken);
 
     mockMvc.perform(request)
-    .andExpect(status().isOk())
+    .andExpect(status().isCreated())
     .andExpect(content().json(jsonResponse));
   }
 
@@ -105,7 +105,7 @@ public class FixedDepositTest {
   }
 
   @Test
-  public void create_adminToken_200Status() throws Exception{
+  public void create_adminToken_201Status() throws Exception{
     String userToken = jwtTokenUtil.generateToken(new org.springframework.security.core.userdetails.User("adminUserEmail@email.com", "1234", new ArrayList<>()));
     String jsonResponse = jsonMapper.writeValueAsString(fixedTermDepositDto);
     RequestBuilder request = MockMvcRequestBuilders
@@ -115,7 +115,7 @@ public class FixedDepositTest {
       .header("Authorization", "Bearer " + userToken);
 
     mockMvc.perform(request)
-    .andExpect(status().isOk())
+    .andExpect(status().isCreated())
     .andExpect(content().json(jsonResponse));
   }
 }
