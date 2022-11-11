@@ -75,6 +75,7 @@ class AccountControllerTest {
         when(userRepositoryMock.findById(user.getId())).thenReturn(Optional.ofNullable(user));
         when(accountRepositoryMock.findAllByUser(user)).thenReturn(accounts);
         when(fixedTermDepositRepositoryMock.findAllByUser(user)).thenReturn(fixedTermDeposits);
+        when(accountRepositoryMock.findById((long) 1)).thenReturn(Optional.empty());
     }
 
     @Test
@@ -127,7 +128,7 @@ class AccountControllerTest {
         .header("Authorization", "Bearer " + userToken);
 
         mockMvc.perform(request)
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isNotFound());
     }
 
     private AccountBalanceDto obtainBalanceDto(List<Account> accounts, List<FixedTermDeposit> fixedTermDeposits){
