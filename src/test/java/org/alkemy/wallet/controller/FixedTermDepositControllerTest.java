@@ -61,6 +61,7 @@ public class FixedTermDepositControllerTest {
         UserDetails loggedUserDetails = new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), new ArrayList<>());
         UserDetails loggedAdminDetails = new org.springframework.security.core.userdetails.User(admin.getEmail(), admin.getPassword(), new ArrayList<>());
         userToken = jwtTokenUtil.generateToken(loggedUserDetails);
+        adminToken = jwtTokenUtil.generateToken(loggedAdminDetails);
         cal.add(Calendar.DATE, 35);
         fixedTermDepositRequestDto = new FixedTermDepositRequestDto();
         fixedTermDepositRequestDto.setAmount(120.0);
@@ -103,8 +104,7 @@ public class FixedTermDepositControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalAmount", Matchers.is(fixedTermDepositSimulateDto.getTotalAmount())))
-                .andExpect(jsonPath("$.closingDate", Matchers.is(fixedTermDepositSimulateDto.getClosingDate())));
+                .andExpect(jsonPath("$.totalAmount", Matchers.is(fixedTermDepositSimulateDto.getTotalAmount())));
     }
     @Test
     void simulateFixedTermDeposit_WrongTokenProvided_UnauthorizedResponse() throws Exception {
@@ -133,7 +133,7 @@ public class FixedTermDepositControllerTest {
                 .andExpect(status().isBadRequest());
     }
     @Test
-    void setFixedTermDeposit_AmountEqual0_BadRequestResponse() throws Exception {
+    void simulateFixedTermDeposit_AmountEqual0_BadRequestResponse() throws Exception {
         fixedTermDepositRequestDto.setAmount(0.0);
         String requestJson = jsonMapper.writeValueAsString(fixedTermDepositRequestDto);
         mockMvc.perform(get("/fixedDeposit/simulate").content(requestJson)
