@@ -32,7 +32,6 @@ public class TransactionServiceImpl implements ITransactionService {
 
     private final ITransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
-    private final IAccountService accountService;
     private final IUserRepository userRepository;
     private final IAccountRepository accountRepository;
     private final MessageSource messageSource;
@@ -40,12 +39,10 @@ public class TransactionServiceImpl implements ITransactionService {
     @Autowired
     public TransactionServiceImpl(ITransactionRepository transactionRepository,
                                   TransactionMapper transactionMapper,
-                                  IAccountService accountService,
                                   IUserRepository userRepository,
                                   IAccountRepository accountRepository, MessageSource messageSource) {
         this.transactionRepository = transactionRepository;
         this.transactionMapper = transactionMapper;
-        this.accountService = accountService;
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.messageSource = messageSource;

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +45,8 @@ public class TransactionControllerTest {
     private ObjectMapper jsonMapper;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private MessageSource messageSource;
 
     private String user1Token;
     private User user1, user2;
@@ -119,7 +123,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Amount must be greater than 0"));
+                .andExpect(content().string(messageSource.getMessage("amount.invalid",null, Locale.US)));
 
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
@@ -133,7 +137,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Destination account id is mandatory"));
+                .andExpect(content().string(messageSource.getMessage("account.mandatory",null, Locale.US)));
 
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
@@ -147,7 +151,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Account not found"));
+                .andExpect(content().string(messageSource.getMessage("account.not-found",null, Locale.US)));
 
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
@@ -161,7 +165,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isForbidden())
-                .andExpect(content().string("Not allow to register transactions in other accounts than yours"));
+                .andExpect(content().string(messageSource.getMessage("account.not-allow",null, Locale.US)));
 
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
@@ -206,7 +210,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Amount must be greater than 0"));
+                .andExpect(content().string(messageSource.getMessage("amount.invalid",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
@@ -222,7 +226,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Not found"));
+                .andExpect(content().string(messageSource.getMessage("not-found.error",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
@@ -238,7 +242,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Cannot be the same account"));
+                .andExpect(content().string(messageSource.getMessage("account.not-same",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
@@ -254,7 +258,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Cannot be different types of currency"));
+                .andExpect(content().string(messageSource.getMessage("account.diff-currency",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
@@ -270,7 +274,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Amount must be less than the limit"));
+                .andExpect(content().string(messageSource.getMessage("amount.above-limit",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
@@ -286,7 +290,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Not enough founds"));
+                .andExpect(content().string(messageSource.getMessage("account.no-enough",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
         assertEquals(originAccountPreBalance, originAccountArs.getBalance());
@@ -347,7 +351,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Amount must be greater than 0"));
+                .andExpect(content().string(messageSource.getMessage("amount.invalid",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
         assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
@@ -363,7 +367,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Not found"));
+                .andExpect(content().string(messageSource.getMessage("not-found.error",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
         assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
@@ -379,7 +383,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Cannot be the same account"));
+                .andExpect(content().string(messageSource.getMessage("account.not-same",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
         assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
@@ -395,7 +399,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Cannot be different types of currency"));
+                .andExpect(content().string(messageSource.getMessage("account.diff-currency",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
         assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
@@ -411,7 +415,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Amount must be less than the limit"));
+                .andExpect(content().string(messageSource.getMessage("amount.above-limit",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
         assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
@@ -427,7 +431,7 @@ public class TransactionControllerTest {
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Not enough founds"));
+                .andExpect(content().string(messageSource.getMessage("account.no-enough",null, Locale.US)));
 
         assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
         assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
