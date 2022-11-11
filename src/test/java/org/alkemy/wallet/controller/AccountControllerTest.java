@@ -76,6 +76,7 @@ class AccountControllerTest {
         when(accountRepositoryMock.findAllByUser(user)).thenReturn(accounts);
         when(fixedTermDepositRepositoryMock.findAllByUser(user)).thenReturn(fixedTermDeposits);
         when(accountRepositoryMock.findById((long) 1)).thenReturn(Optional.empty());
+        when(accountRepositoryMock.findById((long) 2)).thenReturn(Optional.of(account2));
     }
 
     @Test
@@ -129,6 +130,20 @@ class AccountControllerTest {
 
         mockMvc.perform(request)
         .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void update_200() throws Exception{
+        Map<String, String> bodyRequest = new HashMap<>();
+        bodyRequest.put("transactionLimit", "1");
+        RequestBuilder request= MockMvcRequestBuilders
+        .patch("/accounts/2")
+        .content(jsonMapper.writeValueAsString(bodyRequest))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + userToken);
+
+        mockMvc.perform(request)
+        .andExpect(status().isOk());
     }
 
     private AccountBalanceDto obtainBalanceDto(List<Account> accounts, List<FixedTermDeposit> fixedTermDeposits){
