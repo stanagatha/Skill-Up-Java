@@ -64,8 +64,9 @@ public class AccountController {
         return ResponseEntity.ok().body(userService.getBalance());
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Get account information from provided ID")
+    @GetMapping("/info/{id}")
+    @Operation(summary = "Get account information from provided ID",
+            description = "Only accessible as an ADMIN.")
     public ResponseEntity<AccountDto> getById(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(accountService.getById(id));
     }

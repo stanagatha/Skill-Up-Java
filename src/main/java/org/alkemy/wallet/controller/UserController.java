@@ -32,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/current")
-    @Operation(summary = "Get information from the currently authenticated user")
+    @Operation(summary = "Get user information from the currently authenticated user")
     public ResponseEntity<UserDto> getCurrent() {
         return ResponseEntity.ok().body(userService.getCurrent());
     }
