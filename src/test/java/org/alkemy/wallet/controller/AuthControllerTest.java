@@ -3,17 +3,17 @@ package org.alkemy.wallet.controller;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
+import org.alkemy.wallet.dto.ResponseJwtDto;
 import org.alkemy.wallet.dto.UserLoginDto;
 import org.alkemy.wallet.dto.UserRegisterRequestDto;
 import org.alkemy.wallet.dto.UserRegisterResponseDto;
 import org.alkemy.wallet.mapper.UserMapper;
-import org.alkemy.wallet.model.Currency;
 import org.alkemy.wallet.model.Role;
 import org.alkemy.wallet.model.RoleName;
 import org.alkemy.wallet.model.User;
@@ -21,15 +21,9 @@ import org.alkemy.wallet.repository.IRoleRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.security.JwtTokenUtil;
 import org.alkemy.wallet.service.IAccountService;
-import org.alkemy.wallet.service.IAuthService;
-import org.alkemy.wallet.service.IUserService;
-import org.alkemy.wallet.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,18 +31,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alkemy.wallet.dto.ResponseJwtDto;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -130,4 +118,46 @@ public class AuthControllerTest {
 				.andExpect(status().isBadRequest());
 	}
 	
+	@Test
+	public void createAuthenticationToken_DynamicToken_OkResponse() throws JsonProcessingException, Exception {		
+		
+		// A true token is generated		
+		mockMvc.perform(post("/auth/login").content(
+				jsonMapper.writeValueAsString(userLoginDto))
+				.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.token").exists());
+	}
+	
+	@Test
+	public void createAuthenticationToken_LoginUser_OkResponse() throws JsonProcessingException, Exception {		
+		String expectedJson = jsonMapper.writeValueAsString(new ResponseJwtDto(token));		
+			
+		// Use a static token
+		when(jwtTokenUtil.generateToken(loggedUser1Details)).thenReturn(token);
+		
+		mockMvc.perform(post("/auth/login").content(
+				jsonMapper.writeValueAsString(userLoginDto))
+				.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isOk())
+				.andExpect(content().json(expectedJson));;
+	}
+		
+	@Test
+	public void createAuthenticationToken_InvalidBody_BadRequestResponse() throws JsonProcessingException, Exception {		
+
+		mockMvc.perform(post("/auth/login").content(
+				jsonMapper.writeValueAsString("invalid json"))
+				.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	public void createAuthenticationToken_InvalidEndpoint_BadRequestResponse() throws JsonProcessingException, Exception {		
+		
+		mockMvc.perform(post("/auth/logininvalid").content(
+				jsonMapper.writeValueAsString(userLoginDto))
+				.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isNotFound());
+	} 
 }
