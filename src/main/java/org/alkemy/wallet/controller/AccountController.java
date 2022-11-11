@@ -9,6 +9,7 @@ import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +54,7 @@ public class AccountController {
                     "Multiple accounts with the same currency type is not allowed.<br>" +
                     "Balance amount set to 0.")
     public ResponseEntity<AccountDto> createAccount(@RequestParam Currency currency){
-        return ResponseEntity.ok().body(accountService.createAccount(currency));
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(currency));
     }
 
     @GetMapping("/balance")

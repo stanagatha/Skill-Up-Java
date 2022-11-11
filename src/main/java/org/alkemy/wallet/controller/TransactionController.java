@@ -46,23 +46,23 @@ public class TransactionController {
     @PostMapping("/deposit")
     public ResponseEntity<TransactionDto> deposit(@RequestBody TransactionRequestDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.DEPOSIT);
-        return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.save(transactionDto));
     }
 
     @PostMapping("/payment")
     public ResponseEntity<TransactionDto> payment(@RequestBody TransactionRequestDto transactionDto){
         transactionDto.setTypeTransaction(TypeTransaction.PAYMENT);
-        return new ResponseEntity<>(transactionService.save(transactionDto), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.save(transactionDto));
     }
 
     @PostMapping("/sendArs")
     public ResponseEntity<TransactionDto> sendArs(@RequestBody TransactionSendMoneyDto transactionSendMoneyDto){
-        return ResponseEntity.ok().body(transactionService.send(transactionSendMoneyDto, Currency.ARS));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.send(transactionSendMoneyDto, Currency.ARS));
     }
 
     @PostMapping("/sendUsd")
     public ResponseEntity<TransactionDto> sendUsd(@RequestBody TransactionSendMoneyDto transactionSendMoneyDto){
-        return ResponseEntity.ok().body(transactionService.send(transactionSendMoneyDto, Currency.USD));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.send(transactionSendMoneyDto, Currency.USD));
     }
 
 }
