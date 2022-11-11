@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -43,203 +44,419 @@ public class TransactionControllerTest {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    private String userToken;
-    private User admin;
-    private Account account;
-    private TransactionRequestDto transactionRequestDto;
-    private TransactionSendMoneyDto transactionSendMoneyDto;
-    private Account destinyAccount;
-
+    private String user1Token;
+    private User user1, user2;
+    private Account originAccountArs, originAccountUsd, destinyAccountArs, destinyAccountUsd;
+    private TransactionRequestDto depositArsRequestDto;
+    private TransactionSendMoneyDto sendMoneyArsRequestDto, sendMoneyUsdRequestDto;
 
     @BeforeEach
-    public void setUp(){
+    void setUp(){
         Role userRole = new Role(1L, RoleName.USER, "USER Role", new Date(), new Date());
         Role adminRole = new Role(2L, RoleName.ADMIN, "ADMIN Role", new Date(), new Date());
-        User user = new User("UserFN", "UserLN", "userEmail@email.com", "1234", userRole);
-        admin = new User("AdminFN", "AdminLN", "adminEmail@email.com", "5678", adminRole);
-        user.setId(1L);
-        admin.setId(2L);
-        when(userRepositoryMock.findByEmail(user.getEmail())).thenReturn(user);
-        when(userRepositoryMock.findByEmail(admin.getEmail())).thenReturn(admin);
+        user1 = new User(1L, "UserFN", "UserLN", "userEmail@email.com", "1234", userRole, new Date(), new Date(), false);
+        user2 = new User(2L,"AdminFN", "AdminLN", "adminEmail@email.com", "5678", adminRole, new Date(), new Date(), false);
+
+        when(userRepositoryMock.findByEmail(user1.getEmail())).thenReturn(user1);
+        when(userRepositoryMock.findByEmail(user2.getEmail())).thenReturn(user2);
+
         UserDetails loggedUserDetails = new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getPassword(), List.of(new SimpleGrantedAuthority(RoleName.USER.name())));
-        userToken = jwtTokenUtil.generateToken(loggedUserDetails);
+                user1.getEmail(), user1.getPassword(), List.of(new SimpleGrantedAuthority(RoleName.USER.name())));
+        user1Token = jwtTokenUtil.generateToken(loggedUserDetails);
 
-        account = new Account();
-        account.setBalance(1000D);
-        account.setId(1L);
-        account.setUser(user);
-        account.setCurrency(Currency.ARS);
-        account.setTransactionLimit(2000D);
-        account.setCreationDate(new Date());
-        account.setSoftDelete(false);
-        account.setUpdateDate(new Date());
-        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-        when(accountRepository.findByCurrencyAndUser(account.getCurrency(), account.getUser())).thenReturn(account);
+        originAccountArs = new Account(1L, Currency.ARS, 2000D, 1000D, user1, new Date(), new Date(), false);
+        destinyAccountArs = new Account(2L, Currency.ARS, 5000D, 10300D, user2, new Date(), new Date(), false);
+        originAccountUsd = new Account(3L, Currency.USD, 2500D, 1500D, user1, new Date(), new Date(), false);
+        destinyAccountUsd = new Account(4L, Currency.USD, 5500D, 10800D, user2, new Date(), new Date(), false);
 
-        destinyAccount = new Account();
-        destinyAccount.setBalance(10300D);
-        destinyAccount.setId(2L);
-        destinyAccount.setUser(admin);
-        destinyAccount.setCurrency(Currency.ARS);
-        destinyAccount.setTransactionLimit(5000D);
-        destinyAccount.setCreationDate(new Date());
-        destinyAccount.setSoftDelete(false);
-        destinyAccount.setUpdateDate(new Date());
-        when(accountRepository.findById(destinyAccount.getId())).thenReturn(Optional.of(destinyAccount));
+        when(accountRepository.findById(originAccountArs.getId())).thenReturn(Optional.of(originAccountArs));
+        when(accountRepository.findById(originAccountUsd.getId())).thenReturn(Optional.of(originAccountUsd));
+        when(accountRepository.findById(destinyAccountArs.getId())).thenReturn(Optional.of(destinyAccountArs));
+        when(accountRepository.findById(destinyAccountUsd.getId())).thenReturn(Optional.of(destinyAccountUsd));
 
-        transactionRequestDto = new TransactionRequestDto();
-        transactionRequestDto.setTypeTransaction(TypeTransaction.DEPOSIT);
-        transactionRequestDto.setAmount(100D);
-        transactionRequestDto.setDescription("String");
-        transactionRequestDto.setAccountId(1L);
+        when(accountRepository.findByCurrencyAndUser(originAccountArs.getCurrency(), originAccountArs.getUser())).thenReturn(originAccountArs);
+        when(accountRepository.findByCurrencyAndUser(originAccountUsd.getCurrency(), originAccountUsd.getUser())).thenReturn(originAccountUsd);
 
-        transactionSendMoneyDto = new TransactionSendMoneyDto();
-        transactionSendMoneyDto.setAmount(550D);
-        transactionSendMoneyDto.setDescription("SendArs");
-        transactionSendMoneyDto.setDestinationAccountId(2L);
+        depositArsRequestDto = new TransactionRequestDto();
+        depositArsRequestDto.setTypeTransaction(TypeTransaction.DEPOSIT);
+        depositArsRequestDto.setAmount(100D);
+        depositArsRequestDto.setDescription("Deposit");
+        depositArsRequestDto.setAccountId(1L);
 
-        jsonMapper = new ObjectMapper();
+        sendMoneyArsRequestDto = new TransactionSendMoneyDto();
+        sendMoneyArsRequestDto.setAmount(550D);
+        sendMoneyArsRequestDto.setDescription("SendArs");
+        sendMoneyArsRequestDto.setDestinationAccountId(2L);
+
+        sendMoneyUsdRequestDto = new TransactionSendMoneyDto();
+        sendMoneyUsdRequestDto.setAmount(400D);
+        sendMoneyUsdRequestDto.setDescription("SendUsd");
+        sendMoneyUsdRequestDto.setDestinationAccountId(4L);
     }
 
     @Test
     void postDeposit_TokenProvided_CreatedResponse() throws Exception {
+        Double originAccountPreBalance = originAccountArs.getBalance();
+
         mockMvc.perform(post("/transactions/deposit")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.amount").value(100D))
-                .andExpect(jsonPath("$.accountId").value(1L))
-                .andExpect(jsonPath("$.description").value("String"))
+                .andExpect(jsonPath("$.amount").value(depositArsRequestDto.getAmount()))
+                .andExpect(jsonPath("$.accountId").value(depositArsRequestDto.getAccountId()))
+                .andExpect(jsonPath("$.description").value(depositArsRequestDto.getDescription()))
                 .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.DEPOSIT.name()));
+
+        assertEquals(originAccountPreBalance + depositArsRequestDto.getAmount(), originAccountArs.getBalance());
     }
 
     @Test
     void postDeposit_InvalidAmountProvided_BadRequestResponse() throws Exception {
-        transactionRequestDto.setAmount(-100D);
+        Double originAccountPreBalance = originAccountArs.getBalance();
+
+        depositArsRequestDto.setAmount(-100D);
         mockMvc.perform(post("/transactions/deposit")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Amount must be greater than 0"));
+
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
-    void postDeposit_DestinationAccountNull_BadRequestResponse() throws Exception {
-        transactionRequestDto.setAccountId(null);
+    void postDeposit_NullDestinationAccount_BadRequestResponse() throws Exception {
+        Double originAccountPreBalance = originAccountArs.getBalance();
+
+        depositArsRequestDto.setAccountId(null);
         mockMvc.perform(post("/transactions/deposit")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Destination account id is mandatory"));
+
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
-    void postDeposit_DestinationAccountNotFound_NotFoundResponse() throws Exception {
-        transactionRequestDto.setAccountId(10L);
+    void postDeposit_NonexistentDestinationAccount_NotFoundResponse() throws Exception {
+        Double originAccountPreBalance = originAccountArs.getBalance();
+
+        depositArsRequestDto.setAccountId(10L);
         mockMvc.perform(post("/transactions/deposit")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Account not found"));
+
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
     void postDeposit_InvalidAccount_ForbiddenResponse() throws Exception {
-        account.setUser(admin);
+        Double originAccountPreBalance = originAccountArs.getBalance();
+
+        originAccountArs.setUser(user2);
         mockMvc.perform(post("/transactions/deposit")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("Not allow to register transactions in other accounts than yours"));
+
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
     void postDeposit_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
+        Double originAccountPreBalance = originAccountArs.getBalance();
+
         mockMvc.perform(post("/transactions/deposit")
-                        .header("Authorization", "Bearer " + userToken+"fail")
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionRequestDto)))
+                        .header("Authorization", "Bearer " + user1Token +"fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(depositArsRequestDto)))
                 .andExpect(status().isUnauthorized());
+
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
-    void postSendArs_TokenProvided_OkResponse() throws Exception {
+    void postSendArs_UserTokenProvided_OkResponse() throws Exception {
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
         mockMvc.perform(post("/transactions/sendArs")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.amount").value(550D))
-                .andExpect(jsonPath("$.accountId").value(1L))
-                .andExpect(jsonPath("$.description").value("SendArs"))
-                .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.PAYMENT
-                        .name()));
+                .andExpect(jsonPath("$.amount").value(sendMoneyArsRequestDto.getAmount()))
+                .andExpect(jsonPath("$.accountId").value(originAccountArs.getId()))
+                .andExpect(jsonPath("$.description").value(sendMoneyArsRequestDto.getDescription()))
+                .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.PAYMENT.name()));
+
+        assertEquals(destinyAccountPreBalance + sendMoneyArsRequestDto.getAmount(), destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance - sendMoneyArsRequestDto.getAmount(), originAccountArs.getBalance());
     }
 
     @Test
     void postSendArs_InvalidAmountProvided_BadRequestResponse() throws Exception {
-        transactionSendMoneyDto.setAmount(-100D);
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        sendMoneyArsRequestDto.setAmount(-100D);
         mockMvc.perform(post("/transactions/sendArs")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Amount must be greater than 0"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
-    void postSendArs_DestinationAccountNull_NotFoundResponse() throws Exception {
-        transactionSendMoneyDto.setDestinationAccountId(null);
+    void postSendArs_NonexistentDestinationAccount_NotFoundResponse() throws Exception {
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        sendMoneyArsRequestDto.setDestinationAccountId(8L);
         mockMvc.perform(post("/transactions/sendArs")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Not found"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
     void postSendArs_DestinationAccountEqualsCurrentAccount_BadRequestResponse() throws Exception {
-        transactionSendMoneyDto.setDestinationAccountId(1L);
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        sendMoneyArsRequestDto.setDestinationAccountId(originAccountArs.getId());
         mockMvc.perform(post("/transactions/sendArs")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Cannot be the same account"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
     void postSendArs_DestinationAccountWithDifferentCurrency_BadRequestResponse() throws Exception {
-        destinyAccount.setCurrency(Currency.USD);
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        destinyAccountArs.setCurrency(Currency.USD);
         mockMvc.perform(post("/transactions/sendArs")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Cannot be different types of currency"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
     void postSendArs_AmountAboveTheLimit_BadRequestResponse() throws Exception {
-        transactionSendMoneyDto.setAmount(12000D);
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        sendMoneyArsRequestDto.setAmount(originAccountArs.getTransactionLimit() + 1);
         mockMvc.perform(post("/transactions/sendArs")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Amount must be less than the limit"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
     void postSendArs_InsufficientBalance_BadRequestResponse() throws Exception {
-        transactionSendMoneyDto.setAmount(1500D);
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        sendMoneyArsRequestDto.setAmount(originAccountPreBalance + 1);
         mockMvc.perform(post("/transactions/sendArs")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Not enough founds"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
     }
 
     @Test
     void postSendArs_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
-        mockMvc.perform(post("/transactions/deposit")
-                        .header("Authorization", "Bearer " + userToken + "fail")
-                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(transactionSendMoneyDto)))
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token + "fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
                 .andExpect(status().isUnauthorized());
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
+    }
+
+    @Test
+    void postSendArs_NoTokenProvided_UnauthorizedResponse() throws Exception {
+        Double originAccountPreBalance = originAccountArs.getBalance();
+        Double destinyAccountPreBalance = destinyAccountArs.getBalance();
+
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
+                .andExpect(status().isUnauthorized());
+
+        assertEquals(destinyAccountPreBalance, destinyAccountArs.getBalance());
+        assertEquals(originAccountPreBalance, originAccountArs.getBalance());
+    }
+
+    @Test
+    void postSendUsd_UserTokenProvided_OkResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.amount").value(sendMoneyUsdRequestDto.getAmount()))
+                .andExpect(jsonPath("$.accountId").value(originAccountUsd.getId()))
+                .andExpect(jsonPath("$.description").value(sendMoneyUsdRequestDto.getDescription()))
+                .andExpect(jsonPath("$.typeTransaction").value(TypeTransaction.PAYMENT.name()));
+
+        assertEquals(destinyAccountPreBalance + sendMoneyUsdRequestDto.getAmount(), destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance - sendMoneyUsdRequestDto.getAmount(), originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_InvalidAmountProvided_BadRequestResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        sendMoneyUsdRequestDto.setAmount(-100D);
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Amount must be greater than 0"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_NonexistentDestinationAccount_NotFoundResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        sendMoneyUsdRequestDto.setDestinationAccountId(8L);
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Not found"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_DestinationAccountEqualsCurrentAccount_BadRequestResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        sendMoneyUsdRequestDto.setDestinationAccountId(originAccountUsd.getId());
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Cannot be the same account"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_DestinationAccountWithDifferentCurrency_BadRequestResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        destinyAccountUsd.setCurrency(Currency.ARS);
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Cannot be different types of currency"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_AmountAboveTheLimit_BadRequestResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        sendMoneyUsdRequestDto.setAmount(originAccountUsd.getTransactionLimit() + 1);
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Amount must be less than the limit"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_InsufficientBalance_BadRequestResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        sendMoneyUsdRequestDto.setAmount(originAccountPreBalance + 1);
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Not enough founds"));
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_InvalidTokenProvided_UnauthorizedResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .header("Authorization", "Bearer " + user1Token + "fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isUnauthorized());
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
+    }
+
+    @Test
+    void postSendUsd_NoTokenProvided_UnauthorizedResponse() throws Exception {
+        Double originAccountPreBalance = originAccountUsd.getBalance();
+        Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
+
+        mockMvc.perform(post("/transactions/sendUsd")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
+                .andExpect(status().isUnauthorized());
+
+        assertEquals(destinyAccountPreBalance, destinyAccountUsd.getBalance());
+        assertEquals(originAccountPreBalance, originAccountUsd.getBalance());
     }
 }

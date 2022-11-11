@@ -68,7 +68,7 @@ public class TransactionServiceImpl implements ITransactionService {
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         long loggedUserId = userRepository.findByEmail(loggedUserEmail).getId();
-        if (account.get().getUser().getId() != loggedUserId)
+        if (account.get().getUser().getId() != loggedUserId && transactionDto.getTypeTransaction() != TypeTransaction.INCOME)
             throw new ForbiddenException("Not allow to register transactions in other accounts than yours");
 
         if (transactionDto.getTypeTransaction() == TypeTransaction.PAYMENT &&
@@ -146,12 +146,13 @@ public class TransactionServiceImpl implements ITransactionService {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
-        Account account = accountRepository.findByCurrencyAndUser(currency, user);
+        Account originAccount = accountRepository.findByCurrencyAndUser(currency, user);
         Account destinationAccount = accountRepository.findById(transactionSendMoneyDto.getDestinationAccountId()).orElse(null);
-        if (user == null || account == null || destinationAccount == null){
+
+        if (user == null || originAccount == null || destinationAccount == null){
             throw new NotFoundException("Not found");
         }
-        if (account == destinationAccount){
+        if (originAccount == destinationAccount){
             throw new IllegalArgumentException("Cannot be the same account");
         }
         if (destinationAccount.getCurrency() != currency){
@@ -160,21 +161,21 @@ public class TransactionServiceImpl implements ITransactionService {
         if (transactionSendMoneyDto.getAmount() <= 0){
             throw new IllegalArgumentException("Amount must be greater than 0");
         }
-        if (transactionSendMoneyDto.getAmount() > account.getTransactionLimit()){
+        if (transactionSendMoneyDto.getAmount() > originAccount.getTransactionLimit()){
             throw new IllegalArgumentException("Amount must be less than the limit");
         }
 
         TransactionRequestDto originTransactionDto = new TransactionRequestDto();
         originTransactionDto.setAmount(transactionSendMoneyDto.getAmount());
         originTransactionDto.setDescription(transactionSendMoneyDto.getDescription());
-        originTransactionDto.setAccountId(account.getId());
+        originTransactionDto.setAccountId(originAccount.getId());
         originTransactionDto.setTypeTransaction(TypeTransaction.PAYMENT);
         TransactionDto transactionDto = save(originTransactionDto);
 
         TransactionRequestDto destinyTransactionDto = new TransactionRequestDto();
         destinyTransactionDto.setAmount(transactionSendMoneyDto.getAmount());
         destinyTransactionDto.setDescription(transactionSendMoneyDto.getDescription());
-        destinyTransactionDto.setAccountId(account.getId());
+        destinyTransactionDto.setAccountId(destinationAccount.getId());
         destinyTransactionDto.setTypeTransaction(TypeTransaction.INCOME);
         save(destinyTransactionDto);
 
