@@ -19,6 +19,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.*;
 
@@ -73,6 +75,8 @@ class AccountControllerTest {
         when(userRepositoryMock.findById(user.getId())).thenReturn(Optional.ofNullable(user));
         when(accountRepositoryMock.findAllByUser(user)).thenReturn(accounts);
         when(fixedTermDepositRepositoryMock.findAllByUser(user)).thenReturn(fixedTermDeposits);
+        when(accountRepositoryMock.findById((long) 1)).thenReturn(Optional.empty());
+        when(accountRepositoryMock.findById((long) 2)).thenReturn(Optional.of(account2));
     }
 
     @Test
@@ -98,6 +102,48 @@ class AccountControllerTest {
                         contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isOk()).
                 andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void update_transactionLimitIsNull_BadRequest() throws Exception{
+        Map<String, String> bodyRequest = new HashMap<>();
+        bodyRequest.put("transactionLimit", null);
+        RequestBuilder request= MockMvcRequestBuilders
+        .patch("/accounts/1")
+        .content(jsonMapper.writeValueAsString(bodyRequest))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + userToken);
+
+        mockMvc.perform(request)
+        .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void update_accountId_NotFound() throws Exception{
+        Map<String, String> bodyRequest = new HashMap<>();
+        bodyRequest.put("transactionLimit", "1");
+        RequestBuilder request= MockMvcRequestBuilders
+        .patch("/accounts/1")
+        .content(jsonMapper.writeValueAsString(bodyRequest))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + userToken);
+
+        mockMvc.perform(request)
+        .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void update_200() throws Exception{
+        Map<String, String> bodyRequest = new HashMap<>();
+        bodyRequest.put("transactionLimit", "1");
+        RequestBuilder request= MockMvcRequestBuilders
+        .patch("/accounts/2")
+        .content(jsonMapper.writeValueAsString(bodyRequest))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + userToken);
+
+        mockMvc.perform(request)
+        .andExpect(status().isOk());
     }
 
     private AccountBalanceDto obtainBalanceDto(List<Account> accounts, List<FixedTermDeposit> fixedTermDeposits){
