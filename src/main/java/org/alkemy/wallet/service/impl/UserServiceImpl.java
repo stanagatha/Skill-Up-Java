@@ -133,9 +133,9 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserDto updateUser(Long id, UserUpdateDto userUpdateDto) {
-        if(userUpdateDto.firstName == null)
+        if(userUpdateDto.firstName == null || userUpdateDto.firstName.isEmpty())
             throw new BadRequestException("firstName is mandatory");
-        if(userUpdateDto.lastName == null)
+        if(userUpdateDto.lastName == null || userUpdateDto.lastName.isEmpty())
             throw new BadRequestException("lastName is mandatory");
 
         String loggedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
