@@ -19,6 +19,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.*;
 
@@ -98,6 +100,34 @@ class AccountControllerTest {
                         contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isOk()).
                 andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void update_transactionLimitIsNull_BadRequest() throws Exception{
+        Map<String, String> bodyRequest = new HashMap<>();
+        bodyRequest.put("transactionLimit", null);
+        RequestBuilder request= MockMvcRequestBuilders
+        .patch("/accounts/1")
+        .content(jsonMapper.writeValueAsString(bodyRequest))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + userToken);
+
+        mockMvc.perform(request)
+        .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void update_accountId_NotFound() throws Exception{
+        Map<String, String> bodyRequest = new HashMap<>();
+        bodyRequest.put("transactionLimit", "1");
+        RequestBuilder request= MockMvcRequestBuilders
+        .patch("/accounts/1")
+        .content(jsonMapper.writeValueAsString(bodyRequest))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + userToken);
+
+        mockMvc.perform(request)
+        .andExpect(status().isBadRequest());
     }
 
     private AccountBalanceDto obtainBalanceDto(List<Account> accounts, List<FixedTermDeposit> fixedTermDeposits){
