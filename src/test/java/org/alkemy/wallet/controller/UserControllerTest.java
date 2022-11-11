@@ -18,9 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -48,11 +46,10 @@ class UserControllerTest {
     private String user1Token, user2Token, admin1Token;
     private User user1, user2, admin1;
     private Page<User> usersPage0, usersPage1;
-    private List<User> userList;
     private UserUpdateDto userUpdateDto;
 
     @BeforeEach
-    private void setUp(){
+    void setUp(){
         Role userRole = new Role(1L, RoleName.USER, "USER Role", new Date(), new Date());
         Role adminRole = new Role(2L, RoleName.ADMIN, "ADMIN Role", new Date(), new Date());
 
@@ -60,7 +57,7 @@ class UserControllerTest {
         user2 = new User(2L, "User2FN", "User2LN", "user2Email@email.com", "4321", userRole, new Date(), new Date(), false);
         admin1 = new User(3L, "Admin1FN", "Admin1LN", "admin1Email@email.com", "5678", adminRole, new Date(), new Date(), false);
 
-        userList = List.of(user1, user2, admin1);
+        List<User> userList = List.of(user1, user2, admin1);
         usersPage0 = new PageImpl<>(userList.subList(0, 2), PageRequest.of(0,2), 3);
         usersPage1 = new PageImpl<>(userList.subList(2, 3), PageRequest.of(1,2), 3);
 
@@ -110,6 +107,14 @@ class UserControllerTest {
                         param("page", "0").
                         contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getAll_AdminRoleRequestNoPage_BadRequestResponse() throws Exception {
+        mockMvc.perform(get("/users").
+                        header("Authorization", "Bearer " + admin1Token).
+                        contentType(MediaType.APPLICATION_JSON)).
+                andExpect(status().isBadRequest());
     }
 
     @Test
@@ -296,7 +301,7 @@ class UserControllerTest {
     }
 
     @Test
-    void patch_NoFieldProvided_UnauthorizedResponse() throws Exception {
+    void patch_NoFieldProvided_BadRequestResponse() throws Exception {
         userUpdateDto.setFirstName(null);
         mockMvc.perform(patch("/users/" + user1.getId())
                         .header("Authorization", "Bearer " + user1Token)
