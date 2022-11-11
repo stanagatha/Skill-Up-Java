@@ -1,6 +1,8 @@
 package org.alkemy.wallet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.alkemy.wallet.dto.UserDto;
+import org.alkemy.wallet.dto.UserUpdateDto;
 import org.alkemy.wallet.mapper.UserMapper;
 import org.alkemy.wallet.model.Role;
 import org.alkemy.wallet.model.RoleName;
@@ -29,8 +31,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -48,6 +49,7 @@ class UserControllerTest {
     private User user1, user2, admin1;
     private Page<User> usersPage0, usersPage1;
     private List<User> userList;
+    private UserUpdateDto userUpdateDto;
 
     @BeforeEach
     private void setUp(){
@@ -78,6 +80,10 @@ class UserControllerTest {
         when(userRepositoryMock.findAll()).thenReturn(userList);
         when(userRepositoryMock.findAll(PageRequest.of(0,10))).thenReturn(usersPage0);
         when(userRepositoryMock.findAll(PageRequest.of(1,10))).thenReturn(usersPage1);
+
+        userUpdateDto = new UserUpdateDto();
+        userUpdateDto.setFirstName("New name");
+        userUpdateDto.setLastName("New last name");
     }
 
     @Test
@@ -263,5 +269,65 @@ class UserControllerTest {
                 andExpect(status().isBadRequest());
 
         assertEquals(true, user1.getSoftDelete());
+    }
+
+    @Test
+    void patch_TokenProvided_OkResponse() throws Exception {
+        user1.setFirstName(userUpdateDto.getFirstName());
+        user1.setLastName(userUpdateDto.getLastName());
+        UserDto responseUserDto = userMapper.userToUserDTO(user1);
+        when(userRepositoryMock.save(user1)).thenReturn(user1);
+        mockMvc.perform(patch("/users/" + user1.getId())
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(jsonMapper.writeValueAsString(responseUserDto)));
+    }
+
+    @Test
+    void patch_IncorrectTokenProvided_UnauthorizedResponse() throws Exception {
+        mockMvc.perform(patch("/users/" + user1.getId()).
+                        contentType(MediaType.APPLICATION_JSON)).
+                andExpect(status().isUnauthorized());
+        mockMvc.perform(patch("/users/" + user1.getId())
+                        .header("Authorization", "Bearer " + user1Token + "fail")
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void patch_NoFieldProvided_UnauthorizedResponse() throws Exception {
+        userUpdateDto.setFirstName(null);
+        mockMvc.perform(patch("/users/" + user1.getId())
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("firstName is mandatory"));
+        userUpdateDto.setFirstName("New name");
+        userUpdateDto.setLastName(null);
+        mockMvc.perform(patch("/users/" + user1.getId())
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("lastName is mandatory"));
+    }
+
+    @Test
+    void patch_NoUserFound_NotFoundResponse() throws Exception {
+        long idFail = 10L;
+        mockMvc.perform(patch("/users/" + idFail)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No user with id: " + idFail));
+    }
+
+    @Test
+    void patch_UserWithDiffId_ForbiddenResponse() throws Exception {
+        mockMvc.perform(patch("/users/" + user2.getId())
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("You are not allowed to view this user"));
     }
 }

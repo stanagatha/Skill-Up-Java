@@ -9,9 +9,9 @@ import org.alkemy.wallet.mapper.UserMapper;
 
 import org.alkemy.wallet.model.*;
 import org.alkemy.wallet.model.Currency;
+import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IFixedTermDepositRepository;
 import org.alkemy.wallet.repository.IUserRepository;
-import org.alkemy.wallet.service.IAccountService;
 import org.alkemy.wallet.service.IUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,21 +27,21 @@ import java.util.*;
 public class UserServiceImpl implements IUserService {
 
     private final IUserRepository userRepository;
-    private final UserMapper userMapper;
-    private final IAccountService accountService;
+    private final IAccountRepository accountRepository;
     private final IFixedTermDepositRepository fixedTermDepositRepository;
+    private final UserMapper userMapper;
     private final FixedTermDepositMapper fixedTermDepositMapper;
 
     @Autowired
     public UserServiceImpl(IUserRepository userRepository,
-                           UserMapper userMapper,
-                           IAccountService accountService,
+                           IAccountRepository accountRepository,
                            IFixedTermDepositRepository fixedTermDepositRepository,
+                           UserMapper userMapper,
                            FixedTermDepositMapper fixedTermDepositMapper) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.accountService = accountService;
+        this.accountRepository = accountRepository;
         this.fixedTermDepositRepository = fixedTermDepositRepository;
+        this.userMapper = userMapper;
         this.fixedTermDepositMapper = fixedTermDepositMapper;
     }
 
@@ -104,39 +104,31 @@ public class UserServiceImpl implements IUserService {
     @Override
     public AccountBalanceDto getBalance() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        Long userId = userRepository.findByEmail(userEmail).getId();
+        User user = userRepository.findByEmail(userEmail);
 
-        List<AccountDto> accounts = accountService.findAllByUser(userId);
+        List<Account> accounts = accountRepository.findAllByUser(user);
+        List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositRepository.findAllByUser(user);
 
-        if (accounts.isEmpty())
-            throw new NotFoundException("No balance data found for this user");
+        AccountBalanceDto balanceDto = new AccountBalanceDto();
 
-        AccountBalanceDto balances = new AccountBalanceDto();
         HashMap<Currency, Double> balance = new HashMap<>();
-
         for (Currency currency : Currency.values()) {
             balance.put(currency, 0D);
         }
-
-        for (AccountDto account : accounts) {
+        for (Account account : accounts) {
             Double oldBalanceAmount = balance.get(account.getCurrency());
             balance.put(account.getCurrency(), oldBalanceAmount + account.getBalance());
         }
 
-        balances.setBalances(balance);
-
-        List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositRepository.findAll();
-        List<FixedTermDepositDto> fixedTermDepositList = new ArrayList<>();
-
+        List<FixedTermDepositDto> fixedTermDepositDtos = new ArrayList<>();
         for (FixedTermDeposit fixedTermDeposit : fixedTermDeposits) {
-            if (fixedTermDeposit.getAccount().getId().equals(userId)) {
-                fixedTermDepositList.add(fixedTermDepositMapper.fixedTermDepositToFixedTermDepositDto(fixedTermDeposit));
-            }
+            fixedTermDepositDtos.add(fixedTermDepositMapper.fixedTermDepositToFixedTermDepositDto(fixedTermDeposit));
         }
 
-        balances.setFixedTermDepositList(fixedTermDepositList);
+        balanceDto.setBalances(balance);
+        balanceDto.setFixedTermDepositList(fixedTermDepositDtos);
 
-        return balances;
+        return balanceDto;
     }
 
     @Override
