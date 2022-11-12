@@ -183,14 +183,14 @@ public class TransactionControllerTest {
     }
 
     @Test
-    void postSendArs_UserTokenProvided_OkResponse() throws Exception {
+    void postSendArs_UserTokenProvided_CreatedResponse() throws Exception {
         Double originAccountPreBalance = originAccountArs.getBalance();
         Double destinyAccountPreBalance = destinyAccountArs.getBalance();
 
         mockMvc.perform(post("/transactions/sendArs")
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyArsRequestDto)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.amount").value(sendMoneyArsRequestDto.getAmount()))
                 .andExpect(jsonPath("$.accountId").value(originAccountArs.getId()))
                 .andExpect(jsonPath("$.description").value(sendMoneyArsRequestDto.getDescription()))
@@ -324,14 +324,14 @@ public class TransactionControllerTest {
     }
 
     @Test
-    void postSendUsd_UserTokenProvided_OkResponse() throws Exception {
+    void postSendUsd_UserTokenProvided_CreatedResponse() throws Exception {
         Double originAccountPreBalance = originAccountUsd.getBalance();
         Double destinyAccountPreBalance = destinyAccountUsd.getBalance();
 
         mockMvc.perform(post("/transactions/sendUsd")
                         .header("Authorization", "Bearer " + user1Token)
                         .contentType(MediaType.APPLICATION_JSON).content(jsonMapper.writeValueAsString(sendMoneyUsdRequestDto)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.amount").value(sendMoneyUsdRequestDto.getAmount()))
                 .andExpect(jsonPath("$.accountId").value(originAccountUsd.getId()))
                 .andExpect(jsonPath("$.description").value(sendMoneyUsdRequestDto.getDescription()))
