@@ -133,7 +133,7 @@ class AccountControllerTest {
     }
 
     @Test
-    void update_200() throws Exception{
+    void update_OkResponse() throws Exception{
         Map<String, String> bodyRequest = new HashMap<>();
         bodyRequest.put("transactionLimit", "1");
         RequestBuilder request= MockMvcRequestBuilders

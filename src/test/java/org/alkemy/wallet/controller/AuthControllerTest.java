@@ -65,7 +65,7 @@ public class AuthControllerTest {
     
     
     @BeforeEach
-    private void setUp(){
+    public void setUp(){
     	token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXNkU0dGZmRzc3RAbG9jYWwuY29tIiwiaWF0IjoxNjY4MDU4MjMwLCJleHAiOjE2NjgwNzYyMzB9.hoN0oCuDDBG54xZEvRdvpG0Th6cvbBPn_QANHWraGcUxTRxvr5NK6M4oQk5T2oWL2HEpikmaJAsSpcan5yIRmg";
 
         Role userRole = new Role(1L, RoleName.USER, "USER Role", new Date(), new Date());
