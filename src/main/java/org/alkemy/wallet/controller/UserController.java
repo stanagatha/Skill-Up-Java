@@ -37,10 +37,10 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getCurrent());
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user",
             description = "As an ADMIN, can delete any user. As a USER, can only delete themself.")
-    public ResponseEntity<String> deleteById(@PathVariable("userId") Long id) {
+    public ResponseEntity<String> deleteById(@PathVariable("id") Long id) {
         return ResponseEntity.ok().body(userService.deleteById(id));
     }
 

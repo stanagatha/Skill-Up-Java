@@ -40,7 +40,7 @@ public class AccountController {
         return ResponseEntity.ok().body(accountService.getAll(pageNumber));
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/user/{userId}")
     @Operation(summary = "Get all accounts owned by provided user ID",
             description = "Only accessible as an ADMIN.")
     @Secured({"ROLE_ADMIN"})
@@ -64,7 +64,7 @@ public class AccountController {
         return ResponseEntity.ok().body(userService.getBalance());
     }
 
-    @GetMapping("/info/{id}")
+    @GetMapping("/{id}")
     @Operation(summary = "Get account information from provided ID",
             description = "Only accessible as an ADMIN.")
     public ResponseEntity<AccountDto> getById(@PathVariable("id") Long id){
