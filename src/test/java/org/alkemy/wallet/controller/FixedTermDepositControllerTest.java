@@ -6,10 +6,9 @@ import org.alkemy.wallet.WalletApplication;
 import org.alkemy.wallet.dto.FixedTermDepositRequestDto;
 import org.alkemy.wallet.dto.FixedTermDepositSimulateDto;
 import org.alkemy.wallet.mapper.UserMapper;
-import org.alkemy.wallet.model.Currency;
-import org.alkemy.wallet.model.Role;
-import org.alkemy.wallet.model.RoleName;
-import org.alkemy.wallet.model.User;
+import org.alkemy.wallet.model.*;
+import org.alkemy.wallet.repository.IAccountRepository;
+import org.alkemy.wallet.repository.IFixedTermDepositRepository;
 import org.alkemy.wallet.repository.IUserRepository;
 import org.alkemy.wallet.security.JwtTokenUtil;
 import org.hamcrest.Matchers;
@@ -22,6 +21,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,48 +31,58 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = WalletApplication.class)
 @AutoConfigureMockMvc
-
 public class FixedTermDepositControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private JwtTokenUtil jwtTokenUtil;
     @Autowired private ObjectMapper jsonMapper;
-    @Autowired private UserMapper userMapper;
+
     private User user, admin;
+    private Account userAccount, adminAccount;
     private String userToken, adminToken;
     private FixedTermDepositRequestDto fixedTermDepositRequestDto;
     private Calendar cal = Calendar.getInstance();
 
     @MockBean private IUserRepository userRepositoryMock;
-
+    @MockBean private IAccountRepository accountRepository;
+    @MockBean private IFixedTermDepositRepository fixedTermDepositRepository;
 
     @BeforeEach
     public void setUp() throws ParseException {
         Role userRole = new Role(2L, RoleName.ADMIN, "USER Role", new Date(), new Date());
         Role adminRole = new Role(2L, RoleName.ADMIN, "USER Role", new Date(), new Date());
 
-        user = new User("maxi", "maxi", "maxi@alkemy.com", "12345678", userRole);
-        admin = new User("admin", "admin", "admin@alkemy.com", "12345678", adminRole);
-        user.setId(1L);
+        user = new User(1L, "maxi", "maxi", "maxi@alkemy.com", "12345678", userRole, new Date(), new Date(), false);
+        admin = new User(2L, "admin", "admin", "admin@alkemy.com", "12345678", adminRole, new Date(), new Date(), false);
+
         UserDetails loggedUserDetails = new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), new ArrayList<>());
         UserDetails loggedAdminDetails = new org.springframework.security.core.userdetails.User(admin.getEmail(), admin.getPassword(), new ArrayList<>());
         userToken = jwtTokenUtil.generateToken(loggedUserDetails);
         adminToken = jwtTokenUtil.generateToken(loggedAdminDetails);
+
         cal.add(Calendar.DATE, 35);
         fixedTermDepositRequestDto = new FixedTermDepositRequestDto();
         fixedTermDepositRequestDto.setAmount(120.0);
         fixedTermDepositRequestDto.setCurrency(Currency.ARS);
         fixedTermDepositRequestDto.setClosingDate(cal.getTime());
+
         when(userRepositoryMock.findByEmail(user.getEmail())).thenReturn(user);
         when(userRepositoryMock.findById(user.getId())).thenReturn(Optional.ofNullable(user));
         when(userRepositoryMock.findByEmail(admin.getEmail())).thenReturn(admin);
         when(userRepositoryMock.findById(user.getId())).thenReturn(Optional.ofNullable(admin));
 
+        userAccount = new Account(1L, Currency.ARS, 300000D, 50000D, user, new Date(), new Date(), false);
+        adminAccount = new Account(2L, Currency.ARS, 350000D, 70000D, admin, new Date(), new Date(), false);
+        when(accountRepository.findByCurrencyAndUser(fixedTermDepositRequestDto.getCurrency(), user)).thenReturn(userAccount);
+        when(accountRepository.findByCurrencyAndUser(fixedTermDepositRequestDto.getCurrency(), admin)).thenReturn(adminAccount);
+        when(fixedTermDepositRepository.save(any(FixedTermDeposit.class))).thenAnswer(i -> i.getArguments()[0]);
     }
 
     @Test
@@ -124,7 +135,6 @@ public class FixedTermDepositControllerTest {
     void simulateFixedTermDeposit_TimeLessThan30Days_OkResponse() throws Exception{
         cal.add(Calendar.DATE, -30);
         fixedTermDepositRequestDto.setClosingDate(cal.getTime());
-        Long depositDuration = ( fixedTermDepositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
         String requestJson = jsonMapper.writeValueAsString(fixedTermDepositRequestDto);
 
         mockMvc.perform(get("/fixedDeposit/simulate").content(requestJson)
@@ -141,4 +151,59 @@ public class FixedTermDepositControllerTest {
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isBadRequest());
     }
+    @Test
+    void create_userToken_CreatedResponse() throws Exception{
+        Long depositDuration = ( fixedTermDepositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
+        Double interest = fixedTermDepositRequestDto.getAmount() * 0.05 * depositDuration;
+        Double originalBalance = userAccount.getBalance();
+
+        RequestBuilder request = MockMvcRequestBuilders
+                .post("/fixedDeposit")
+                .content(jsonMapper.writeValueAsString(fixedTermDepositRequestDto))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + userToken);
+
+        mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.amount", Matchers.is(fixedTermDepositRequestDto.getAmount())))
+                .andExpect(jsonPath("$.interest", Matchers.is(interest)));
+
+        assertEquals(originalBalance - fixedTermDepositRequestDto.getAmount(), userAccount.getBalance());
+    }
+    @Test
+    void create_adminToken_CreatedResponse() throws Exception{
+        Long depositDuration = ( fixedTermDepositRequestDto.getClosingDate().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) % 365;
+        Double interest = fixedTermDepositRequestDto.getAmount() * 0.05 * depositDuration;
+        Double originalBalance = adminAccount.getBalance();
+
+        RequestBuilder request = MockMvcRequestBuilders
+                .post("/fixedDeposit")
+                .content(jsonMapper.writeValueAsString(fixedTermDepositRequestDto))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + adminToken);
+
+        mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.amount", Matchers.is(fixedTermDepositRequestDto.getAmount())))
+                .andExpect(jsonPath("$.interest", Matchers.is(interest)));
+
+        assertEquals(originalBalance - fixedTermDepositRequestDto.getAmount(), adminAccount.getBalance());
+    }
+    @Test
+    void create_NoTokenProvided_UnauthorizedResponse() throws Exception{
+        Double adminOriginalBalance = adminAccount.getBalance();
+        Double userOriginalBalance = userAccount.getBalance();
+
+        RequestBuilder request = MockMvcRequestBuilders
+                .post("/fixedDeposit")
+                .content(jsonMapper.writeValueAsString(fixedTermDepositRequestDto))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isUnauthorized());
+
+        assertEquals(userOriginalBalance, userAccount.getBalance());
+        assertEquals(adminOriginalBalance, adminAccount.getBalance());
+    }
+
 }
