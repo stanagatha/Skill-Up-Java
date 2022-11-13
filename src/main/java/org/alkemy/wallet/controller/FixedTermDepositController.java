@@ -31,7 +31,7 @@ public class FixedTermDepositController {
         return ResponseEntity.status(HttpStatus.CREATED).body(fixedTermDepositService.createDeposit(deposit));
     }
 
-    @GetMapping("/simulate")
+    @PostMapping("/simulate")
     @Operation(summary = "Simulate a term deposit",
             description = "0.5% interest rate per day.<br>" +
                     "Shows its creation and closing dates, amount invested, interest earned, total amount to collect.<br>" +

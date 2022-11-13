@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = WalletApplication.class)
@@ -93,7 +94,7 @@ public class FixedTermDepositControllerTest {
         fixedTermDepositSimulateDto.setClosingDate(fixedTermDepositRequestDto.getClosingDate());
         fixedTermDepositSimulateDto.setInterest(fixedTermDepositRequestDto.getAmount() * 0.05 * depositDuration);
         fixedTermDepositSimulateDto.setTotalAmount(fixedTermDepositRequestDto.getAmount() + fixedTermDepositSimulateDto.getInterest());
-        mockMvc.perform(get("/fixedDeposit/simulate").content(requestJson)
+        mockMvc.perform(post("/fixedDeposit/simulate").content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
@@ -109,7 +110,7 @@ public class FixedTermDepositControllerTest {
         fixedTermDepositSimulateDto.setClosingDate(fixedTermDepositRequestDto.getClosingDate());
         fixedTermDepositSimulateDto.setInterest(fixedTermDepositRequestDto.getAmount() * 0.05 * depositDuration);
         fixedTermDepositSimulateDto.setTotalAmount(fixedTermDepositRequestDto.getAmount() + fixedTermDepositSimulateDto.getInterest());
-        mockMvc.perform(get("/fixedDeposit/simulate").content(requestJson)
+        mockMvc.perform(post("/fixedDeposit/simulate").content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
@@ -117,7 +118,7 @@ public class FixedTermDepositControllerTest {
     }
     @Test
     void simulateFixedTermDeposit_WrongTokenProvided_UnauthorizedResponse() throws Exception {
-        mockMvc.perform(get("/fixedDeposit/simulate").
+        mockMvc.perform(post("/fixedDeposit/simulate").
                         header("Authorization", "Bearer " + userToken + "b").
                         contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isUnauthorized());
@@ -125,7 +126,7 @@ public class FixedTermDepositControllerTest {
     @Test
     void simulateFixedTermDeposit_NoTokenProvided_UnauthorizedResponse() throws Exception{
         String requestJson = jsonMapper.writeValueAsString(fixedTermDepositRequestDto);
-        mockMvc.perform(get("/fixedDeposit/simulate").content(requestJson)
+        mockMvc.perform(post("/fixedDeposit/simulate").content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -135,7 +136,7 @@ public class FixedTermDepositControllerTest {
         fixedTermDepositRequestDto.setClosingDate(cal.getTime());
         String requestJson = jsonMapper.writeValueAsString(fixedTermDepositRequestDto);
 
-        mockMvc.perform(get("/fixedDeposit/simulate").content(requestJson)
+        mockMvc.perform(post("/fixedDeposit/simulate").content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isBadRequest());
@@ -144,7 +145,7 @@ public class FixedTermDepositControllerTest {
     void simulateFixedTermDeposit_AmountEqual0_BadRequestResponse() throws Exception {
         fixedTermDepositRequestDto.setAmount(0.0);
         String requestJson = jsonMapper.writeValueAsString(fixedTermDepositRequestDto);
-        mockMvc.perform(get("/fixedDeposit/simulate").content(requestJson)
+        mockMvc.perform(post("/fixedDeposit/simulate").content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isBadRequest());
