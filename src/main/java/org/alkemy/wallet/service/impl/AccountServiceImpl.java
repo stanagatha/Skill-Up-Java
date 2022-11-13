@@ -27,9 +27,7 @@ import java.util.*;
 public class AccountServiceImpl implements IAccountService {
 
     private final IAccountRepository accountRepository;
-
     private final IUserRepository userRepository;
-
     private final AccountMapper accountMapper;
     private final MessageSource messageSource;
 

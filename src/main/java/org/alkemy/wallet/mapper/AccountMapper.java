@@ -2,7 +2,6 @@ package org.alkemy.wallet.mapper;
 
 import org.alkemy.wallet.dto.AccountDto;
 import org.alkemy.wallet.model.Account;
-import org.alkemy.wallet.model.Currency;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,7 +21,6 @@ public class AccountMapper {
         accountDto.setSoftDelete(account.getSoftDelete());
 
         return accountDto;
-
     }
 
     public Account accountDtoToAccount(AccountDto accountDto){
@@ -40,7 +38,6 @@ public class AccountMapper {
         account.setSoftDelete(accountDto.getSoftDelete());
 
         return account;
-
     }
 
 }

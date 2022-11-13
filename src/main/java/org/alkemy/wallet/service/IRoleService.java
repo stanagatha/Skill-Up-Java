@@ -6,6 +6,6 @@ import org.alkemy.wallet.model.RoleName;
 
 public interface IRoleService {
 
-	RoleDto findByRoleName(RoleName admin);
+    RoleDto findByRoleName(RoleName admin);
 
 }

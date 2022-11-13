@@ -16,4 +16,5 @@ public class FixedTermDepositSimulateDto implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss.SSSZ")
     private Date closingDate;
     private Double totalAmount;
+
 }

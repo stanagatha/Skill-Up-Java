@@ -2,7 +2,6 @@ package org.alkemy.wallet.mapper;
 
 import org.alkemy.wallet.dto.RoleDto;
 import org.alkemy.wallet.model.Role;
-import org.alkemy.wallet.model.RoleName;
 import org.springframework.stereotype.Component;
 
 @Component

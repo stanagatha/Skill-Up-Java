@@ -7,7 +7,9 @@ import java.util.Date;
 
 @Data
 public class FixedTermDepositRequestDto {
+
     private Double amount;
     private Date closingDate;
     private Currency currency;
+
 }

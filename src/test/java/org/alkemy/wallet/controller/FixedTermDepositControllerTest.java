@@ -1,11 +1,9 @@
 package org.alkemy.wallet.controller;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alkemy.wallet.WalletApplication;
 import org.alkemy.wallet.dto.FixedTermDepositRequestDto;
 import org.alkemy.wallet.dto.FixedTermDepositSimulateDto;
-import org.alkemy.wallet.mapper.UserMapper;
 import org.alkemy.wallet.model.*;
 import org.alkemy.wallet.repository.IAccountRepository;
 import org.alkemy.wallet.repository.IFixedTermDepositRepository;

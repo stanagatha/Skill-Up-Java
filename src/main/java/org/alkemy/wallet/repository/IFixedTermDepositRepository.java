@@ -9,5 +9,7 @@ import java.util.List;
 
 @Repository
 public interface IFixedTermDepositRepository extends JpaRepository<FixedTermDeposit, Long> {
+
     List<FixedTermDeposit> findAllByUser(User user);
+
 }

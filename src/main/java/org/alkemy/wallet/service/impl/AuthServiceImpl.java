@@ -24,22 +24,16 @@ public class AuthServiceImpl implements IAuthService {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
-	
 	@Autowired
 	private IUserService userService;
-	
 	@Autowired
 	private IAccountService accountService;
-
 	@Autowired
 	private IRoleRepository roleRepository;
-	
 	@Autowired
 	private UserDetailsService userDetailsService;
-	
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
-	
 	@Autowired
 	UserMapper userMapper;
 	
