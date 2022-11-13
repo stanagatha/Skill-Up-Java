@@ -2,12 +2,16 @@ package org.alkemy.wallet.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "TRANSACTIONS")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Transaction {
 
     @Id
@@ -30,6 +34,6 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID", nullable = false)
-    private Account accountId;
+    private Account account;
 
 }

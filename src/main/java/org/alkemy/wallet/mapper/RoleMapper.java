@@ -2,7 +2,6 @@ package org.alkemy.wallet.mapper;
 
 import org.alkemy.wallet.dto.RoleDto;
 import org.alkemy.wallet.model.Role;
-import org.alkemy.wallet.model.RoleName;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +13,7 @@ public class RoleMapper {
 
         Role role = new Role();
         role.setId(roleDto.getId());
-        role.setRoleName(RoleName.valueOf(roleDto.getRoleName()));
+        role.setRoleName(roleDto.getRoleName());
         role.setDescription(roleDto.getDescription());
         role.setCreationDate(roleDto.getCreationDate());
         role.setUpdateDate(roleDto.getUpdateDate());
@@ -28,7 +27,7 @@ public class RoleMapper {
 
         RoleDto roleDto = new RoleDto();
         roleDto.setId(role.getId());
-        roleDto.setRoleName(role.getRoleName().name());
+        roleDto.setRoleName(role.getRoleName());
         roleDto.setDescription(role.getDescription());
         roleDto.setCreationDate(role.getCreationDate());
         roleDto.setUpdateDate(role.getUpdateDate());

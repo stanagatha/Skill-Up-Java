@@ -1,6 +1,8 @@
 package org.alkemy.wallet.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -8,6 +10,8 @@ import java.util.Date;
 @Entity
 @Table(name = "FIXED_TERM_DEPOSITS")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FixedTermDeposit {
 
     @Id
@@ -20,11 +24,11 @@ public class FixedTermDeposit {
 
     @ManyToOne
     @JoinColumn(name = "USER_ID", nullable = false)
-    private User userId;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID", nullable = false)
-    private Account accountId;
+    private Account account;
 
     @Column(name = "INTEREST", nullable = false)
     private Double interest;

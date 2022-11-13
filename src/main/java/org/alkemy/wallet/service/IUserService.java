@@ -1,13 +1,27 @@
 package org.alkemy.wallet.service;
 
+import org.alkemy.wallet.dto.AccountBalanceDto;
 import org.alkemy.wallet.dto.UserDto;
+import org.alkemy.wallet.dto.UserUpdateDto;
+import org.alkemy.wallet.model.User;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface IUserService {
 
-    List<UserDto> getAll();
+    UserDto getCurrent();
+
+    Page<UserDto> getAll(Integer pageNumber);
 
     String deleteById(Long id);
+
+    User save(User user);
+
+    AccountBalanceDto getBalance();
+
+    UserDto updateUser(Long id, UserUpdateDto userUpdateDto);
+
+    UserDto getById(Long id);
 
 }

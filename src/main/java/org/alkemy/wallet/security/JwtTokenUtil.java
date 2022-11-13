@@ -17,9 +17,7 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtTokenUtil implements Serializable {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -6043782806002940686L;
 
 	public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
@@ -57,7 +55,7 @@ public class JwtTokenUtil implements Serializable {
 		return doGenerateToken(claims, userDetails.getUsername());
 	}
 
-	// Definir claims del token, firmar y compactar
+	// Define token claims, sign and compact
 	private String doGenerateToken(Map<String, Object> claims, String subject) {
 		return Jwts.builder()
 				   .setClaims(claims)
