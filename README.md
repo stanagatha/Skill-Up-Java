@@ -4,33 +4,33 @@
 
 ## Development team
 
-- Leandro Deferrari - <a href="https://github.com/leandrodeferrari" target="blank">GitHib</a>
-- Agatha Stanchi - <a href="https://github.com/stanagatha" target="blank">GitHib</a>
-- Franco Maximiliano Miranda - <a href="https://github.com/maximiranda" target="blank">GitHib</a>
-- Natalia Gamarra - <a href="https://github.com/NatGamarra" target="blank">GitHib</a>
-- Alejandro Corvalán - <a href="https://github.com/no7sag" target="blank">GitHib</a>
-- Julián Garzón - <a href="https://github.com/julianDGS" target="blank">GitHib</a>
-- Santiago Fonseca - <a href="https://github.com/Wiliamfm" target="blank">GitHib</a>
-- Ignacio Avila - <a href="https://github.com/ignacioavilamdp" target="blank">GitHib</a>
+- Leandro Deferrari - <a href="https://github.com/leandrodeferrari" target="blank">GitHub</a>
+- Agatha Stanchi - <a href="https://github.com/stanagatha" target="blank">GitHub</a>
+- Franco Maximiliano Miranda - <a href="https://github.com/maximiranda" target="blank">GitHub</a>
+- Natalia Gamarra - <a href="https://github.com/NatGamarra" target="blank">GitHub</a>
+- Alejandro Corvalán - <a href="https://github.com/no7sag" target="blank">GitHub</a>
+- Julián Garzón - <a href="https://github.com/julianDGS" target="blank">GitHub</a>
+- Santiago Fonseca - <a href="https://github.com/Wiliamfm" target="blank">GitHub</a>
+- Ignacio Avila - <a href="https://github.com/ignacioavilamdp" target="blank">GitHub</a>
 
 ## Our mentor
 
-- Yamil Amado Selene - <a href="https://github.com/turcoamado" target="blank">GitHib</a>
+- Yamil Amado Selene - <a href="https://github.com/turcoamado" target="blank">GitHub</a>
 
 ## Technologies used
 
-- Main language: Java
+- Main language: Java 17
 - Framework: SpringBoot
 - Dependency manager: Maven
 - ORM: Hibernate - JPA
 - Security manager: Spring security
 - API documentation: Swagger
 - Automated testing: JUnit and Mockito
-- Manual testing: Postman.
+- Manual testing: Postman
 - Data Base engine: MySQL
 - Version Control System: GIT
 - Project management: JIRA
-- Team communication: Discord.
+- Team communication: Discord
 
 ## Build and Setup information
 
@@ -64,29 +64,29 @@ the following preloaded users:
 
 | email | password |
 | ----- | -------- |
-| nataliag@alkemy.com | 12345678 |
-| maximiliano@alkemy.com | 12345678 |
-| ignacio@alkemy.com | 12345678 |
-| agatha@alkemy.com | 12345678 |
-| alejandro@alkemy.com | 12345678 |
-| julian@alkemy.com | 12345678 |
-| leandro@alkemy.com | 12345678 |
-| santiago@alkemy.com | 12345678 |
-| pedro@alkemy.com | 12345678 |
-| mariano@alkemy.com | 12345678 |
+| nataliag@alkemy<span></span>.com | 12345678 |
+| maximiliano@alkemy<span></span>.com | 12345678 |
+| ignacio@alkemy<span></span>.com | 12345678 |
+| agatha@alkemy<span></span>.com | 12345678 |
+| alejandro@alkemy<span></span>.com | 12345678 |
+| julian@alkemy<span></span>.com | 12345678 |
+| leandro@alkemy<span></span>.com | 12345678 |
+| santiago@alkemy<span></span>.com | 12345678 |
+| pedro@alkemy<span></span>.com | 12345678 |
+| mariano@alkemy<span></span>.com | 12345678 |
 
 
 #### Standard users:
 
 | email | password |
 | ----- | -------- |
-| sergio@alkemy.com | 12345678 |
-| diego@alkemy.com | 12345678 |
-| eliana@alkemy.com | 12345678 |
-| fernando@alkemy.com | 12345678 |
-| oscar@alkemy.com | 12345678 |
-| florencia@alkemy.com | 12345678 |
-| alexis@alkemy.com | 12345678 |
-| brian@alkemy.com | 12345678 |
-| gonzalo@alkemy.com | 12345678 |
-| lucas@alkemy.comm | 12345678 |
+| sergio@alkemy<span></span>.com | 12345678 |
+| diego@alkemy<span></span>.com | 12345678 |
+| eliana@alkemy<span></span>.com | 12345678 |
+| fernando@alkemy<span></span>.com | 12345678 |
+| oscar@alkemy<span></span>.com | 12345678 |
+| florencia@alkemy<span></span>.com | 12345678 |
+| alexis@alkemy<span></span>.com | 12345678 |
+| brian@alkemy<span></span>.com | 12345678 |
+| gonzalo@alkemy<span></span>.com | 12345678 |
+| lucas@alkemy<span></span>.com | 12345678 |
