@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IAccountRepository extends JpaRepository<Account, Long>{
 
-  List<Account> findAllByUser(User user);
+    List<Account> findAllByUser(User user);
+    Account findByCurrencyAndUser(Currency currency, User user);
 
-  Account findByCurrencyAndUser(Currency currency, User user);
 }

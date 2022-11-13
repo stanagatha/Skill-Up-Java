@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ITransactionRepository extends JpaRepository<Transaction, Long> {
 
-  List<Transaction> findAllByAccount(Account account);
+    List<Transaction> findAllByAccount(Account account);
 
 }

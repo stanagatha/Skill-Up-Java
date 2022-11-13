@@ -13,10 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Serializable {
 
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2545962500069194320L;
 
 	@Override
