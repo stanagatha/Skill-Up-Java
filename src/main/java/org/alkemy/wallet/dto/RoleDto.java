@@ -17,4 +17,5 @@ public class RoleDto implements Serializable {
     private Date creationDate;
     @JsonFormat(pattern = "yyyy/MM/dd")
     private Date updateDate;
+
 }
