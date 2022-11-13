@@ -35,7 +35,7 @@
 ## Build and Setup information
 
 ### Build and run instructions
-- Clone the repo.
+- Clone the repo
 - On the root folder run: ```mvn clean install```
 - Then run: ```mvn spring-boot:run```
 
