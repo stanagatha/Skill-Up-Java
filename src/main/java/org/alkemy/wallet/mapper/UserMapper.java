@@ -19,7 +19,6 @@ public class UserMapper {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        // TODO : HASH SOMETHING HERE
         user.setPassword(userDto.getPassword());
         user.setSoftDelete(false);
         user.setCreationDate(new Date());
